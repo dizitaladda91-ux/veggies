@@ -41,9 +41,12 @@ class DashboardService {
       let totalPending = 0;
 
       commissions.forEach((c) => {
-        const amt = parseFloat(c.amount);
-        if (c.status === 'paid') totalPaid += amt;
-        else if (c.status === 'pending' || c.status === 'approved') totalPending += amt;
+        const amt = parseFloat(c.amount || 0);
+        if (c.status === 'paid' || c.status === 'approved') {
+          totalPaid += amt;
+        } else if (c.status === 'pending') {
+          totalPending += amt;
+        }
       });
 
       return {

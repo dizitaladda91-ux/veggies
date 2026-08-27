@@ -91,8 +91,8 @@ class CommissionRepository {
     return res.rows;
   }
 
-  async updateCommissionStatus(commissionId, status) {
-    const res = await db.query(
+  async updateCommissionStatus(commissionId, status, client = db) {
+    const res = await client.query(
       `UPDATE commissions SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
       [status, commissionId]
     );
@@ -116,8 +116,8 @@ class CommissionRepository {
     if (role === 'affiliate' || role === 'super_affiliate') {
       const statsRes = await db.query(
         `SELECT 
-           COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_paid,
-           COALESCE(SUM(CASE WHEN status = 'approved' OR status = 'pending' THEN amount ELSE 0 END), 0) as total_pending,
+           COALESCE(SUM(CASE WHEN status = 'paid' OR status = 'approved' THEN amount ELSE 0 END), 0) as total_paid,
+           COALESCE(SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END), 0) as total_pending,
            COUNT(id) as total_commissions
          FROM commissions
          WHERE affiliate_id = $1 AND deleted_at IS NULL`,
@@ -128,7 +128,7 @@ class CommissionRepository {
       // Global Admin Summary
       const statsRes = await db.query(
         `SELECT 
-           COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_commission_paid,
+           COALESCE(SUM(CASE WHEN status = 'paid' OR status = 'approved' THEN amount ELSE 0 END), 0) as total_commission_paid,
            COALESCE(SUM(amount), 0) as total_revenue_generated,
            COUNT(id) as total_conversions
          FROM commissions

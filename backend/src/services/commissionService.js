@@ -10,7 +10,9 @@ class CommissionService {
   }
 
   async createRule({ name, type, value, eventType, minimumAmount, maximumAmount, createdBy }) {
-    if (maximumAmount !== null && maximumAmount !== undefined && Number(maximumAmount) < Number(minimumAmount || 0)) throw ApiError.badRequest('Maximum amount must be greater than minimum amount');
+    if (maximumAmount !== null && maximumAmount !== undefined && Number(maximumAmount) < Number(minimumAmount || 0)) {
+      throw ApiError.badRequest('Maximum amount must be greater than minimum amount');
+    }
     return commissionRepository.createRule({ name, type, value, eventType, minimumAmount, maximumAmount, createdBy });
   }
 
@@ -20,11 +22,64 @@ class CommissionService {
       throw ApiError.badRequest(`Status must be one of: ${validStatuses.join(', ')}`);
     }
 
-    const updated = await commissionRepository.updateCommissionStatus(commissionId, status);
-    if (!updated) {
-      throw ApiError.notFound('Commission record not found');
+    const client = await db.getClient();
+    try {
+      await client.query('BEGIN');
+
+      // Lock existing commission
+      const commRes = await client.query(
+        `SELECT * FROM commissions WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
+        [commissionId]
+      );
+      const comm = commRes.rows[0];
+      if (!comm) {
+        throw ApiError.notFound('Commission record not found');
+      }
+
+      const previousStatus = comm.status;
+
+      // Update commission status
+      const updated = await commissionRepository.updateCommissionStatus(commissionId, status, client);
+
+      // If transitioning to 'approved' or 'paid' from 'pending' or 'rejected', credit affiliate wallet
+      if ((status === 'approved' || status === 'paid') && (previousStatus === 'pending' || previousStatus === 'rejected')) {
+        const wallet = await walletRepository.findOrCreateByUserId(comm.affiliate_id, client);
+        const lockedWallet = await walletRepository.lockWallet(wallet.id, client);
+        const openingBalance = Number(lockedWallet.available_balance || 0);
+
+        const walletUpdate = await client.query(
+          `UPDATE wallets 
+           SET available_balance = available_balance + $1,
+               lifetime_earnings = lifetime_earnings + $1,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $2
+           RETURNING available_balance`,
+          [comm.amount, lockedWallet.id]
+        );
+
+        await client.query(
+          `INSERT INTO wallet_transactions (wallet_id, user_id, type, reference_type, reference_id, amount, opening_balance, closing_balance, description, status)
+           VALUES ($1, $2, 'COMMISSION_SETTLEMENT', 'COMMISSION', $3, $4, $5, $6, $7, 'SUCCESS')`,
+          [
+            lockedWallet.id,
+            comm.affiliate_id,
+            comm.id,
+            comm.amount,
+            openingBalance,
+            Number(walletUpdate.rows[0].available_balance),
+            `Commission ${status.toUpperCase()} by Admin`
+          ]
+        );
+      }
+
+      await client.query('COMMIT');
+      return updated;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-    return updated;
   }
 
   /**
