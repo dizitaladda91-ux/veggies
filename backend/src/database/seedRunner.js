@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('./index');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 const runSeed = async () => {
   try {

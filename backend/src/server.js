@@ -1,6 +1,6 @@
 const app = require('./app');
 const config = require('./config/env');
-const logger = require('./logs/logger');
+const logger = require('./utils/logger');
 
 const server = app.listen(config.port, () => {
   const dbHost = config.dbUrl ? config.dbUrl.split('@')[1] || 'configured' : 'not set';

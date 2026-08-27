@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 const config = require('../config/env');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 // Auto-detect if SSL is required for remote host (e.g. Supabase, Render, AWS, Neon)
 const isRemoteDb = config.dbUrl && (

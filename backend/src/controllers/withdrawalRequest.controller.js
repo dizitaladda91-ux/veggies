@@ -1,7 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const service = require('../services/withdrawalRequest.service');
 const notificationRepository = require('../repositories/notification.repository');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 exports.create = asyncHandler(async (req, res) => {
   const result = await service.request(req.user.id, req.body);

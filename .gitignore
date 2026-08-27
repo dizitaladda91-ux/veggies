@@ -32,7 +32,8 @@ coverage/
 test-results/
 playwright-report/
 .cache/
-logs/
+/logs/
+backend/logs/
 *.log
 
 # Deployment and editor metadata

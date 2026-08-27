@@ -1,6 +1,6 @@
 const https = require('https');
 const config = require('../config/env');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 class RazorpayXService {
   isConfigured() {

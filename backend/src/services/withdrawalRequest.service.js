@@ -5,7 +5,7 @@ const withdrawalRepository = require('../repositories/withdrawal.repository');
 const bankAccountRepository = require('../repositories/bankAccount.repository');
 const userRepository = require('../repositories/userRepository');
 const emailService = require('./emailService');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 class WithdrawalRequestService {
   async request(userId, { amount, bankAccountId, notes }) {

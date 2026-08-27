@@ -1,7 +1,7 @@
 const commissionRepository = require('../repositories/commissionRepository');
 const ApiError = require('../utils/apiError');
 const db = require('../database');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 const walletRepository = require('../repositories/walletrepository');
 
 class CommissionService {

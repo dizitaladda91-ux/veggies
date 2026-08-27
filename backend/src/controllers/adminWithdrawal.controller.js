@@ -5,7 +5,7 @@ const ApiError = require('../utils/apiError');
 const db = require('../database');
 const walletRepository = require('../repositories/walletrepository');
 const emailService = require('../services/emailService');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 const logRepository = require('../repositories/logRepository');
 const config = require('../config/env');
 

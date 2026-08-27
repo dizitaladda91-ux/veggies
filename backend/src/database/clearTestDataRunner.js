@@ -1,5 +1,5 @@
 const db = require('./index');
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 
 const protectedTables = [
   'roles',

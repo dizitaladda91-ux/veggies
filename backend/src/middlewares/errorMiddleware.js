@@ -1,4 +1,4 @@
-const logger = require('../logs/logger');
+const logger = require('../utils/logger');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
 const ApiError = require('../utils/apiError');
 const config = require('../config/env');
