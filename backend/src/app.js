@@ -14,9 +14,8 @@ const path = require('path');
 
 const app = express();
 
-// Render sits in front of this service and supplies X-Forwarded-For. Trusting
-// one proxy lets express-rate-limit identify the original client correctly.
-app.set('trust proxy', config.trustProxy);
+// Render / Vercel sits in front of this service and supplies X-Forwarded-For.
+app.set('trust proxy', config.trustProxy || 1);
 
 // Security HTTP headers
 app.use(helmet());
