@@ -25,8 +25,25 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error('Origin is not allowed by CORS policy'));
+      if (!origin) return callback(null, true);
+      const normalizedOrigin = origin.replace(/\/+$/, '').toLowerCase();
+
+      const isAllowed =
+        config.corsOrigins.some((allowed) => {
+          if (allowed === '*') return true;
+          const normAllowed = allowed.toLowerCase().replace(/\/+$/, '');
+          if (normAllowed === normalizedOrigin) return true;
+          if (normAllowed.startsWith('*.') && normalizedOrigin.endsWith(normAllowed.slice(1))) return true;
+          return false;
+        }) ||
+        (config.env !== 'production' &&
+          (normalizedOrigin.includes('localhost') || normalizedOrigin.includes('127.0.0.1')));
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
     },
     credentials: true,
   })

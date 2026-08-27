@@ -75,18 +75,23 @@ module.exports = {
   mfaEncryptionKey,
   storefrontApiKey,
   corsOrigins: [
-    ...(process.env.CORS_ORIGIN
-      || process.env.FRONTEND_URL
-      || (process.env.NODE_ENV === 'production'
-        ? 'https://affiliation.veggieradiance.com'
-        : 'http://localhost:3000'))
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
-    ...(process.env.NODE_ENV === 'production'
-      ? ['https://affiliation.veggieradiance.com']
-      : []),
-  ],
+    ...(process.env.CORS_ORIGIN || '').split(','),
+    ...(process.env.FRONTEND_URL || '').split(','),
+    ...(process.env.STOREFRONT_URL || '').split(','),
+    'https://affiliation.aloraradiance.com',
+    'https://aloraradiance.com',
+    'https://affiliation.veggie.in',
+    'https://veggie.in',
+    'https://veggie.com',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'http://localhost:5000',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+  ]
+    .map((origin) => (origin || '').trim().replace(/\/+$/, ''))
+    .filter(Boolean),
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
   rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
   trustProxy: process.env.TRUST_PROXY
