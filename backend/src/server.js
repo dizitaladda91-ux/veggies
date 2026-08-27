@@ -1,6 +1,7 @@
 const app = require('./app');
 const config = require('./config/env');
 const logger = require('./utils/logger');
+const commissionService = require('./services/commissionService');
 
 const server = app.listen(config.port, () => {
   const dbHost = config.dbUrl ? config.dbUrl.split('@')[1] || 'configured' : 'not set';
@@ -10,6 +11,19 @@ const server = app.listen(config.port, () => {
   logger.info(` Database Host: ${dbHost}`);
   logger.info(` API: http://localhost:${config.port}${config.apiPrefix || '/'}`);
   logger.info(`=======================================================`);
+
+  // Automated 24-Hour Commission Auto-Settlement Scheduler
+  const run24hAutoSettlement = async () => {
+    try {
+      await commissionService.autoSettleMaturedCommissions(24);
+    } catch (err) {
+      logger.error('Background 24h auto-settlement error:', err.message);
+    }
+  };
+
+  // Run 10 seconds after server starts, then check every 30 minutes
+  setTimeout(run24hAutoSettlement, 10000);
+  setInterval(run24hAutoSettlement, 30 * 60 * 1000);
 });
 
 const unexpectedErrorHandler = (error) => {

@@ -99,15 +99,15 @@ class CommissionRepository {
     return res.rows[0];
   }
 
-  async findMaturedPendingCommissions(holdDays = 7) {
+  async findMaturedPendingCommissions(holdHours = 24) {
     const res = await db.query(
       `SELECT c.*, w.id AS wallet_id
        FROM commissions c
        LEFT JOIN wallets w ON w.user_id = c.affiliate_id AND w.deleted_at IS NULL
        WHERE c.status = 'pending'
-         AND c.created_at <= (CURRENT_TIMESTAMP - INTERVAL '1 day' * $1)
+         AND c.created_at <= (CURRENT_TIMESTAMP - INTERVAL '1 hour' * $1)
          AND c.deleted_at IS NULL`,
-      [holdDays]
+      [holdHours]
     );
     return res.rows;
   }

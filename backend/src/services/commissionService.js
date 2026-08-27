@@ -83,14 +83,14 @@ class CommissionService {
   }
 
   /**
-   * Automatically transition pending commissions created past the hold window
+   * Automatically transition pending commissions created past 24 hours
    * to approved status and credit the affiliate's available wallet balance.
    */
-  async autoSettleMaturedCommissions(holdDays = 7) {
+  async autoSettleMaturedCommissions(holdHours = 24) {
     const client = await db.getClient();
     try {
       await client.query('BEGIN');
-      const matured = await commissionRepository.findMaturedPendingCommissions(holdDays);
+      const matured = await commissionRepository.findMaturedPendingCommissions(holdHours);
       let settledCount = 0;
       let totalSettledAmount = 0;
 
@@ -99,7 +99,7 @@ class CommissionService {
         const wallet = comm.wallet_id
           ? await walletRepository.lockWallet(comm.wallet_id, client)
           : await walletRepository.findOrCreateByUserId(comm.affiliate_id, client);
-        const openingBalance = Number(wallet.available_balance);
+        const openingBalance = Number(wallet.available_balance || 0);
 
         // 1. Mark commission as approved
         await client.query(
@@ -121,7 +121,7 @@ class CommissionService {
         // 3. Record wallet transaction log
         await client.query(
           `INSERT INTO wallet_transactions (wallet_id, user_id, type, reference_type, reference_id, amount, opening_balance, closing_balance, description, status)
-           VALUES ($1, $2, 'COMMISSION_SETTLEMENT', 'COMMISSION', $3, $4, $5, $6, 'Automated Commission Settlement after Hold Window', 'SUCCESS')`,
+           VALUES ($1, $2, 'COMMISSION_SETTLEMENT', 'COMMISSION', $3, $4, $5, $6, 'Automated Commission Settlement after 24h Hold Window', 'SUCCESS')`,
           [wallet.id, comm.affiliate_id, comm.id, comm.amount, openingBalance, Number(walletUpdate.rows[0].available_balance)]
         );
 
@@ -130,7 +130,9 @@ class CommissionService {
       }
 
       await client.query('COMMIT');
-      logger.info(`Auto-settlement completed: ${settledCount} commissions settled ($${totalSettledAmount.toFixed(2)})`);
+      if (settledCount > 0) {
+        logger.info(`Auto-settlement completed: ${settledCount} commissions auto-approved after 24h (₹${totalSettledAmount.toFixed(2)})`);
+      }
       return { settledCount, totalSettledAmount };
     } catch (error) {
       await client.query('ROLLBACK');
