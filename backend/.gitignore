@@ -1,28 +1,20 @@
 # Dependencies
 node_modules/
-frontend/node_modules/
 
-# Build
-dist/
-frontend/dist/
-
-# Environment
+# Environment files
 .env
 .env.*
 .env.example
-!.env.example
-!.env.example.*
-frontend/.env.example
-backend/.env.example
-backend/.env.example.emai"
-backend/.env
+.env.example.*
+
+# Audit and Config files
+*-audit*.json
+jest.config.js
+render.yaml
+render.yml
 
 # Logs
 *.log
-
-
-# Vercel
-.vercel/
 
 # OS
 .DS_Store

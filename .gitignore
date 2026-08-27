@@ -3,7 +3,7 @@ node_modules/
 
 # Environment files and secrets
 .env
-.env
+.env.*
 .env.example
 .env.example.*
 *.pem
@@ -13,6 +13,12 @@ node_modules/
 .pgpass
 secrets/
 credentials/
+
+# Audit and Config files
+*-audit*.json
+jest.config.js
+render.yaml
+render.yml
 
 # Local-only configuration and administrator bootstrap data
 *.local
