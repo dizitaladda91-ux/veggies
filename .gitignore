@@ -22,7 +22,6 @@ render.yml
 IMPLEMENTATION_SUMMARY.md
 README.md
 capacitor.config.json
-eslint.config.js
 playwright.config.js
 vitest.config.js
 

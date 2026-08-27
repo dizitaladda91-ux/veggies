@@ -11,7 +11,6 @@ node_modules/
 IMPLEMENTATION_SUMMARY.md
 README.md
 capacitor.config.json
-eslint.config.js
 playwright.config.js
 vitest.config.js
 docker-compose.override.yml
