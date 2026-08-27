@@ -1,28 +1,25 @@
 # Dependencies
 node_modules/
-frontend/node_modules/
 
-# Build
-dist/
-frontend/dist/
-
-# Environment
+# Environment files
 .env
 .env.*
 .env.example
-!.env.example
-!.env.example.*
-frontend/.env.example
-backend/.env.example
-frontend/docker-compose.override.yml
-frontend/IMPLEMENTATION.md
-frontend/render.yaml
+.env.example.*
 
-# Logs
+# Documentation & Config files
+IMPLEMENTATION_SUMMARY.md
+README.md
+capacitor.config.json
+eslint.config.js
+playwright.config.js
+vitest.config.js
+docker-compose.override.yml
+render.yaml
+
+# Build & Logs
+dist/
 *.log
-
-
-# Vercel
 .vercel/
 
 # OS

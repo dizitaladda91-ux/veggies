@@ -14,11 +14,17 @@ node_modules/
 secrets/
 credentials/
 
-# Audit and Config files
+# Audit, Documentation and Config files
 *-audit*.json
 jest.config.js
 render.yaml
 render.yml
+IMPLEMENTATION_SUMMARY.md
+README.md
+capacitor.config.json
+eslint.config.js
+playwright.config.js
+vitest.config.js
 
 # Local-only configuration and administrator bootstrap data
 *.local
