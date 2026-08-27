@@ -7,12 +7,10 @@ node_modules/
 .env.example
 .env.example.*
 
-# Documentation & Config files
+# Local Documentation & Deploy Configs
 IMPLEMENTATION_SUMMARY.md
 README.md
 capacitor.config.json
-playwright.config.js
-vitest.config.js
 docker-compose.override.yml
 render.yaml
 

@@ -22,8 +22,6 @@ render.yml
 IMPLEMENTATION_SUMMARY.md
 README.md
 capacitor.config.json
-playwright.config.js
-vitest.config.js
 
 # Local-only configuration and administrator bootstrap data
 *.local
