@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "sanitize-html": "^2.17.7"
+  }
+}

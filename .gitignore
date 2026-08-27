@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+!.env.example.*
+*.pem
+*.key
+*.p12
+*.pfx
+.pgpass
+secrets/
+credentials/
+
+# Local-only configuration and administrator bootstrap data
+*.local
+docker-compose.override.yml
+backend/src/database/create_initial_users.sql
+
+# Database exports and backups
+*.dump
+*.backup
+*.bak
+*.sql.gz
+
+# Generated application output
+dist/
+build/
+coverage/
+test-results/
+playwright-report/
+.cache/
+logs/
+*.log
+
+# Deployment and editor metadata
+.vercel/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

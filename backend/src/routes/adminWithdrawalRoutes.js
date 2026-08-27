@@ -1,0 +1,16 @@
+const express = require('express');
+const { param, body, query } = require('express-validator');
+const { authenticate } = require('../middlewares/authMiddleware');
+const { authorizeRoles } = require('../middlewares/rbacMiddleware');
+const { ROLES } = require('../constants/roles');
+const validate = require('../middlewares/validationMiddleware');
+const controller = require('../controllers/adminWithdrawal.controller');
+const router = express.Router();
+router.use(authenticate, authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN));
+router.get('/export', controller.exportCsv);
+router.get('/', [query('page').optional().isInt({ min: 1 }), query('limit').optional().isInt({ min: 1, max: 100 })], validate, controller.list);
+router.patch('/:id/approve', [param('id').isString().notEmpty(), body('notes').optional().trim().isLength({ max: 500 })], validate, controller.approve);
+router.patch('/:id/reject', [param('id').isString().notEmpty(), body('notes').optional().trim().isLength({ max: 500 })], validate, controller.reject);
+router.post('/:id/razorpay-order', [param('id').isString().notEmpty()], validate, controller.createRazorpayPayoutOrder);
+router.post('/:id/razorpay-complete', [param('id').isString().notEmpty()], validate, controller.completeRazorpayPayout);
+module.exports = router;

@@ -1,0 +1,54 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Affiliate Management API",
+    "version": "1.0.0",
+    "description": "Reference for storefront and partner integrations."
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate an affiliate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Authenticated" } }
+      }
+    },
+    "/referrals/conversion": {
+      "post": {
+        "summary": "Record a referral conversion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["referralCode", "orderId", "amount"],
+                "properties": {
+                  "referralCode": { "type": "string" },
+                  "orderId": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "clickId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Conversion recorded" } }
+      }
+    }
+  }
+}

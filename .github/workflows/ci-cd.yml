@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: affiliate_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+      - name: Run Migration Smoke Test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/affiliate_db
+        run: |
+          cd backend
+          npm run db:migrate
+      - name: Run Backend Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/affiliate_db
+        run: |
+          cd backend
+          npm test
+      - name: Dependency Audit
+        run: |
+          cd backend
+          npm audit --omit=dev --audit-level=critical
+      - name: Secret Scan
+        run: |
+          cd backend
+          npm run scan:secrets
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Frontend Dependencies & Build
+        run: |
+          cd frontend
+          npm ci
+          npm run lint
+          npm run build
+      - name: Run Frontend Unit Tests
+        run: |
+          cd frontend
+          npm run test
+      - name: Install Playwright Browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps chromium
+      - name: Run Frontend E2E Tests
+        run: |
+          cd frontend
+          npm run test:e2e
+      - name: Frontend Dependency Audit
+        run: |
+          cd frontend
+          npm audit --omit=dev --audit-level=critical
