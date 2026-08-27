@@ -19,6 +19,7 @@ import {
   Building2,
   PieChart,
   LogOut,
+  CheckSquare,
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -75,6 +76,7 @@ export const Sidebar = () => {
             section: 'MANAGEMENT',
             items: [
               { label: 'All Users', path: ROUTES.USER_MANAGEMENT, icon: Users },
+              { label: 'Approve Commissions', path: ROUTES.ADMIN_COMMISSIONS, icon: CheckSquare },
               { label: 'Commission Rules', path: ROUTES.COMMISSION_RULES, icon: Percent },
               { label: 'Marketing Banners', path: ROUTES.MARKETING_ASSETS, icon: ImageIcon },
             ],
@@ -97,6 +99,7 @@ export const Sidebar = () => {
             section: 'NETWORK',
             items: [
               { label: 'Affiliates', path: ROUTES.USER_MANAGEMENT, icon: Users },
+              { label: 'Approve Commissions', path: ROUTES.ADMIN_COMMISSIONS, icon: CheckSquare },
               { label: 'Commission Engine', path: ROUTES.COMMISSION_RULES, icon: Percent },
               { label: 'Marketing Banners', path: ROUTES.MARKETING_ASSETS, icon: ImageIcon },
             ],

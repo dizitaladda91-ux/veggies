@@ -91,6 +91,26 @@ class CommissionRepository {
     return res.rows;
   }
 
+  async findAllCommissionsForAdmin({ status = null, limit = 100, offset = 0 } = {}) {
+    const values = [];
+    let query = `
+      SELECT c.*, ce.order_id, ce.amount AS order_amount, ce.currency, u.email, p.first_name, p.last_name, p.company
+      FROM commissions c
+      LEFT JOIN conversion_events ce ON c.conversion_id = ce.id
+      JOIN users u ON c.affiliate_id = u.id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE c.deleted_at IS NULL
+    `;
+    if (status && status !== 'ALL') {
+      values.push(status.toLowerCase());
+      query += ` AND LOWER(c.status) = $${values.length}`;
+    }
+    values.push(limit, offset);
+    query += ` ORDER BY c.created_at DESC LIMIT $${values.length - 1} OFFSET $${values.length}`;
+    const res = await db.query(query, values);
+    return res.rows;
+  }
+
   async updateCommissionStatus(commissionId, status, client = db) {
     const res = await client.query(
       `UPDATE commissions SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
@@ -99,15 +119,15 @@ class CommissionRepository {
     return res.rows[0];
   }
 
-  async findMaturedPendingCommissions(holdHours = 24) {
+  async findMaturedPendingCommissions(holdDays = 7) {
     const res = await db.query(
       `SELECT c.*, w.id AS wallet_id
        FROM commissions c
        LEFT JOIN wallets w ON w.user_id = c.affiliate_id AND w.deleted_at IS NULL
        WHERE c.status = 'pending'
-         AND c.created_at <= (CURRENT_TIMESTAMP - INTERVAL '1 hour' * $1)
+         AND c.created_at <= (CURRENT_TIMESTAMP - INTERVAL '1 day' * $1)
          AND c.deleted_at IS NULL`,
-      [holdHours]
+      [holdDays]
     );
     return res.rows;
   }

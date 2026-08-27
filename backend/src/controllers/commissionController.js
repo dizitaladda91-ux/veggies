@@ -1,4 +1,5 @@
 const commissionService = require('../services/commissionService');
+const commissionRepository = require('../repositories/commissionRepository');
 const { sendSuccess } = require('../helpers/responseHelper');
 const asyncHandler = require('../utils/asyncHandler');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
@@ -21,6 +22,12 @@ class CommissionController {
       createdBy: req.user.id,
     });
     return sendSuccess(res, 'Commission rule created', rule, HTTP_STATUS.CREATED);
+  });
+
+  getAllCommissionsForAdmin = asyncHandler(async (req, res) => {
+    const status = req.query.status || null;
+    const commissions = await commissionRepository.findAllCommissionsForAdmin({ status });
+    return sendSuccess(res, 'All commissions fetched successfully', commissions);
   });
 
   updateStatus = asyncHandler(async (req, res) => {

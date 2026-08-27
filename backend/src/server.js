@@ -12,18 +12,18 @@ const server = app.listen(config.port, () => {
   logger.info(` API: http://localhost:${config.port}${config.apiPrefix || '/'}`);
   logger.info(`=======================================================`);
 
-  // Automated 24-Hour Commission Auto-Settlement Scheduler
-  const run24hAutoSettlement = async () => {
+  // Automated 7-Day Commission Auto-Settlement Scheduler
+  const run7DayAutoSettlement = async () => {
     try {
-      await commissionService.autoSettleMaturedCommissions(24);
+      await commissionService.autoSettleMaturedCommissions(7);
     } catch (err) {
-      logger.error('Background 24h auto-settlement error:', err.message);
+      logger.error('Background 7-day auto-settlement error:', err.message);
     }
   };
 
-  // Run 10 seconds after server starts, then check every 30 minutes
-  setTimeout(run24hAutoSettlement, 10000);
-  setInterval(run24hAutoSettlement, 30 * 60 * 1000);
+  // Run 10 seconds after server starts, then check every hour
+  setTimeout(run7DayAutoSettlement, 10000);
+  setInterval(run7DayAutoSettlement, 60 * 60 * 1000);
 });
 
 const unexpectedErrorHandler = (error) => {

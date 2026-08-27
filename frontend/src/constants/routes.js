@@ -18,6 +18,7 @@ export const ROUTES = {
   USER_MANAGEMENT: '/admin/users',
   AFFILIATE_APPROVALS: '/admin/affiliates/approvals',
   COMMISSION_RULES: '/admin/commission-rules',
+  ADMIN_COMMISSIONS: '/admin/commissions',
   TEAM_TRACKING: '/super-affiliate/team',
   REFERRAL_LINKS: '/affiliate/links',
   EARNINGS: '/affiliate/earnings',

@@ -37,6 +37,7 @@ const SuperAffiliateDashboard = safeLazy(() => import('../pages/SuperAffiliateDa
 const AffiliateDashboard = safeLazy(() => import('../pages/AffiliateDashboard').then(({ AffiliateDashboard: Page }) => ({ default: Page })));
 const UserManagement = safeLazy(() => import('../pages/UserManagement').then(({ UserManagement: Page }) => ({ default: Page })));
 const CommissionRules = safeLazy(() => import('../pages/CommissionRules').then(({ CommissionRules: Page }) => ({ default: Page })));
+const AdminCommissions = safeLazy(() => import('../pages/AdminCommissions').then(({ AdminCommissions: Page }) => ({ default: Page })));
 const ReferralLinks = safeLazy(() => import('../pages/ReferralLinks').then(({ ReferralLinks: Page }) => ({ default: Page })));
 const Earnings = safeLazy(() => import('../pages/Earnings').then(({ Earnings: Page }) => ({ default: Page })));
 const TeamManagement = safeLazy(() => import('../pages/TeamManagement').then(({ TeamManagement: Page }) => ({ default: Page })));
@@ -82,6 +83,7 @@ export const AppRoutes = () => {
             <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
             <Route path={ROUTES.USER_MANAGEMENT} element={<UserManagement />} />
             <Route path={ROUTES.COMMISSION_RULES} element={<CommissionRules />} />
+            <Route path={ROUTES.ADMIN_COMMISSIONS} element={<AdminCommissions />} />
             <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogs />} />
             <Route path={ROUTES.ADMIN_WITHDRAWALS} element={<AdminWithdrawals />} />
             <Route path={ROUTES.ADMIN_BANK_ACCOUNTS} element={<AdminBankAccounts />} />
