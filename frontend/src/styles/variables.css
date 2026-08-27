@@ -1,81 +1,85 @@
 :root {
-  /* Veggie Fresh SaaS Color Palette - Emerald, Lime & Forest Green */
+  /* Veggie Ultra-Premium Emerald SaaS Palette (Matching Landing Page V2) */
   --primary-hue: 160;
   --primary-sat: 84%;
-  --primary-lightness: 39%; /* Emerald #059669 */
+  --primary-lightness: 45%;
 
-  --primary: #059669;
-  --primary-hover: #047857;
-  --primary-light: #ecfdf5;
-  --primary-subtle: #d1fae5;
-  --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 50%, #65a30d 100%);
-  --primary-gradient-hover: linear-gradient(135deg, #047857 0%, #059669 50%, #4d7c0f 100%);
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --primary-light: rgba(16, 185, 129, 0.15);
+  --primary-subtle: rgba(16, 185, 129, 0.25);
+  --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 50%, #84cc16 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #047857 0%, #059669 50%, #65a30d 100%);
 
   --accent-lime: #84cc16;
   --accent-mint: #34d399;
   --accent-forest: #064e3b;
 
-  --neutral-50: #f4fbf7;
-  --neutral-100: #eefbf4;
-  --neutral-200: #e2e8f0;
-  --neutral-300: #cbd5e1;
-  --neutral-400: #94a3b8;
-  --neutral-500: #64748b;
-  --neutral-600: #475569;
-  --neutral-700: #334155;
-  --neutral-800: #1e293b;
-  --neutral-900: #091e17;
-  --neutral-950: #04120e;
+  --neutral-50: #091e17;
+  --neutral-100: #06241b;
+  --neutral-200: rgba(52, 211, 153, 0.2);
+  --neutral-300: #10b981;
+  --neutral-400: #34d399;
+  --neutral-500: #6ee7b7;
+  --neutral-600: #a7f3d0;
+  --neutral-700: #d1fae5;
+  --neutral-800: #ecfdf5;
+  --neutral-900: #ffffff;
+  --neutral-950: #ffffff;
 
   --success: #10b981;
-  --success-bg: #ecfdf5;
+  --success-bg: rgba(16, 185, 129, 0.15);
   --warning: #f59e0b;
-  --warning-bg: #fffbeb;
+  --warning-bg: rgba(245, 158, 11, 0.15);
   --danger: #ef4444;
-  --danger-bg: #fef2f2;
-  --info: #0284c7;
-  --info-bg: #f0f9ff;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.15);
 
-  /* Surfaces */
-  --bg-app: #f4fbf7;
-  --bg-surface: #ffffff;
-  --bg-sidebar: #062e24;
-  --text-main: #091e17;
-  --text-muted: #4b6358;
-  --border-color: #d1fae5;
+  /* Surfaces - Matching Landing Page V2 Ultra-Premium Theme */
+  --bg-app: #04120e;
+  --bg-surface: rgba(6, 36, 27, 0.85);
+  --bg-surface-solid: #06241b;
+  --bg-sidebar: #02140e;
+  --bg-input: rgba(4, 18, 14, 0.75);
+  --text-main: #ffffff;
+  --text-muted: #a7f3d0;
+  --border-color: rgba(52, 211, 153, 0.25);
 
   /* Typography */
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   
   /* Radii */
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px 0 rgba(5, 150, 105, 0.08);
-  --shadow-md: 0 4px 12px -2px rgba(5, 150, 105, 0.12), 0 2px 4px -2px rgba(5, 150, 105, 0.08);
-  --shadow-lg: 0 12px 24px -4px rgba(5, 150, 105, 0.16), 0 4px 8px -4px rgba(5, 150, 105, 0.08);
-  --shadow-glow: 0 0 25px rgba(16, 185, 129, 0.35);
+  /* Shadows & Glassmorphism Glows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(5, 150, 105, 0.15);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.2);
+  --shadow-glow: 0 0 30px rgba(16, 185, 129, 0.45);
 
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
 }
 
-[data-theme='dark'] {
-  --bg-app: #04120e;
-  --bg-surface: #06241b;
-  --bg-sidebar: #02140e;
-  --text-main: #f0fdf4;
-  --text-muted: #86efac;
-  --border-color: #0b3d2e;
+[data-theme='light'] {
+  --bg-app: #f4fbf7;
+  --bg-surface: #ffffff;
+  --bg-surface-solid: #ffffff;
+  --bg-sidebar: #062e24;
+  --bg-input: #ffffff;
+  --text-main: #091e17;
+  --text-muted: #4b6358;
+  --border-color: #d1fae5;
 
-  --primary-light: rgba(16, 185, 129, 0.2);
-  --success-bg: rgba(16, 185, 129, 0.2);
-  --warning-bg: rgba(245, 158, 11, 0.2);
-  --danger-bg: rgba(239, 68, 68, 0.2);
-  --info-bg: rgba(2, 132, 199, 0.2);
+  --primary-light: #ecfdf5;
+  --success-bg: #ecfdf5;
+  --warning-bg: #fffbeb;
+  --danger-bg: #fef2f2;
+  --info-bg: #f0f9ff;
 }

@@ -2281,3 +2281,178 @@
   .footer-grid-v2 { grid-template-columns: 1fr; }
   .floating-pill-v2 { display: none; }
 }
+
+/* ==========================================================================
+   APP-WIDE LANDING V2 GLASSMORPHISM OVERRIDES (ALL PAGES UNIFIED)
+   ========================================================================== */
+
+body, #root, .app-container, .main-content {
+  background-color: var(--bg-app) !important;
+  color: var(--text-main) !important;
+}
+
+/* Glassmorphism Card Overrides */
+.card, .stat-card, .dashboard-card, .table-container, .modal-content, .financial-modal {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  transition: all 0.25s ease !important;
+}
+
+.card:hover, .stat-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+  border-color: rgba(52, 211, 153, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+/* Stat Cards & Metric Values */
+.stat-value, .metric-value, .dashboard-amount {
+  color: #ffffff !important;
+  font-size: 1.8rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.stat-label, .metric-label, .dashboard-label {
+  color: #34d399 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.stat-icon, .card-icon {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-radius: 0.75rem !important;
+}
+
+/* Custom Table Glassmorphism */
+.custom-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.custom-table th {
+  background: rgba(0, 0, 0, 0.35) !important;
+  color: #34d399 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 0.9rem 1.25rem !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.custom-table td {
+  padding: 1rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: #f0fdf4 !important;
+  font-size: 0.88rem !important;
+}
+
+.custom-table tr:hover td {
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Form Controls & Inputs */
+.form-input, .form-select, .form-textarea, input[type="text"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: #ffffff !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.65rem 0.9rem !important;
+  font-size: 0.88rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-input::placeholder, input::placeholder, textarea::placeholder {
+  color: #64748b !important;
+}
+
+.form-input:focus, .form-select:focus, input:focus, select:focus, textarea:focus {
+  border-color: #34d399 !important;
+  background: rgba(6, 36, 27, 0.95) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+  outline: none !important;
+}
+
+/* Buttons */
+.btn-primary, .btn-submit, .btn-emerald {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #65a30d 100%) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4) !important;
+  transition: all 0.25s ease !important;
+}
+
+.btn-primary:hover, .btn-submit:hover, .btn-emerald:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.6) !important;
+}
+
+.btn-secondary, .btn-cancel, .btn-outline {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--border-color) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-secondary:hover, .btn-cancel:hover, .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+/* Topbar Header & Sidebar */
+.premium-header {
+  background: rgba(4, 18, 14, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.header-portal-indicator {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #34d399 !important;
+}
+
+.header-search-input {
+  background: rgba(4, 18, 14, 0.8) !important;
+  border-color: var(--border-color) !important;
+  color: #ffffff !important;
+}
+
+.header-action-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #a7f3d0 !important;
+}
+
+.header-action-btn:hover {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.premium-sidebar {
+  background: #02140e !important;
+  border-right: 1px solid var(--border-color) !important;
+}
+
+/* Auth Screens */
+.auth-shell {
+  background: #04120e !important;
+}
+
+.auth-card {
+  background: rgba(6, 36, 27, 0.88) !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(16, 185, 129, 0.18) !important;
+}
