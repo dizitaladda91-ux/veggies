@@ -282,6 +282,7 @@ CREATE TABLE IF NOT EXISTS affiliate_bank_accounts (
   branch_name VARCHAR(100),
   upi_id VARCHAR(100),
   account_type VARCHAR(20) NOT NULL CHECK (account_type IN ('SAVINGS', 'CURRENT')),
+  document_url TEXT,
   is_default BOOLEAN NOT NULL DEFAULT FALSE,
   verification_status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (verification_status IN ('PENDING', 'VERIFIED', 'REJECTED')),
   verified_by __USER_ID_TYPE__ REFERENCES users(id),
@@ -290,6 +291,7 @@ CREATE TABLE IF NOT EXISTS affiliate_bank_accounts (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE
 );
+ALTER TABLE affiliate_bank_accounts ADD COLUMN IF NOT EXISTS document_url TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_one_default_bank_account_per_user ON affiliate_bank_accounts(user_id) WHERE is_default = TRUE AND deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS wallets (

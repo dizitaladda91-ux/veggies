@@ -19,10 +19,8 @@ const accountFields = [
   body(['ifscCode', 'ifsc_code'])
     .customSanitizer((val) => (val ? String(val).trim().toUpperCase() : ''))
     .custom((val, { req }) => {
-      // If user provided an IFSC code, validate format
       const ifsc = val || req.body.ifscCode || req.body.ifsc_code || '';
       if (!ifsc) {
-        // If no IFSC provided but UPI ID is present, allow it
         if (req.body.upiId || req.body.upi_id) return true;
         throw new Error('IFSC code is required (e.g. SBIN0001234).');
       }
@@ -43,6 +41,11 @@ const accountFields = [
     .trim()
     .isLength({ max: 100 })
     .withMessage('UPI ID must be at most 100 characters.'),
+
+  body(['documentUrl', 'document_url'])
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .withMessage('Document URL must be a string.'),
 
   body('accountType')
     .optional({ checkFalsy: true })

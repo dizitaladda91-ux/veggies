@@ -2,36 +2,30 @@ const db = require("../database");
 const bankAccountRepository = require("../repositories/bankAccount.repository");
 
 class BankAccountService {
-    
   /**
    * Mask account number before sending response
    * Example: 123456789012 -> XXXXXXXX9012
    */
   maskAccountNumber(accountNumber) {
     if (!accountNumber) return null;
-
     const account = accountNumber.toString();
-
     if (account.length <= 4) {
       return account;
     }
-
     return `${"X".repeat(account.length - 4)}${account.slice(-4)}`;
   }
 
-     async createBankAccount(userId, data) {
+  async createBankAccount(userId, data) {
     const client = await db.getClient();
 
     try {
       await client.query("BEGIN");
 
       // Check duplicate account number
-      const existingAccounts =
-        await bankAccountRepository.findByUserId(userId);
+      const existingAccounts = await bankAccountRepository.findByUserId(userId);
 
       const duplicate = existingAccounts.find(
-        (account) =>
-          account.account_number === data.accountNumber
+        (account) => account.account_number === data.accountNumber
       );
 
       if (duplicate) {
@@ -59,6 +53,8 @@ class BankAccountService {
         );
       }
 
+      const documentUrl = data.documentUrl || data.document_url || null;
+
       // Create account
       const bankAccount = await client.query(
         `
@@ -71,10 +67,11 @@ class BankAccountService {
           branch_name,
           upi_id,
           account_type,
+          document_url,
           is_default
         )
         VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10
         )
         RETURNING *;
         `,
@@ -87,6 +84,7 @@ class BankAccountService {
           data.branchName,
           data.upiId,
           data.accountType,
+          documentUrl,
           isDefault,
         ]
       );
@@ -107,7 +105,7 @@ class BankAccountService {
     }
   }
 
-    async getMyAccounts(userId) {
+  async getMyAccounts(userId) {
     const accounts = await bankAccountRepository.findByUserId(userId);
 
     return accounts.map((account) => ({
@@ -123,7 +121,6 @@ class BankAccountService {
       throw new Error("Bank account not found.");
     }
 
-    // Ownership check
     if (account.user_id !== userId) {
       throw new Error("You are not authorized to access this bank account.");
     }
@@ -134,7 +131,7 @@ class BankAccountService {
     };
   }
 
-    async updateBankAccount(userId, accountId, data) {
+  async updateBankAccount(userId, accountId, data) {
     const account = await bankAccountRepository.findById(accountId);
 
     if (!account) {
@@ -145,7 +142,6 @@ class BankAccountService {
       throw new Error("You are not authorized to update this bank account.");
     }
 
-    // Check duplicate account number
     const accounts = await bankAccountRepository.findByUserId(userId);
 
     const duplicate = accounts.find(
@@ -187,14 +183,13 @@ class BankAccountService {
         throw new Error("You are not authorized to update this bank account.");
       }
 
-     await bankAccountRepository.clearDefault(userId, client);
+      await bankAccountRepository.clearDefault(userId, client);
 
-const defaultAccount =
-  await bankAccountRepository.setDefault(
-    userId,
-    accountId,
-    client
-  );
+      const defaultAccount = await bankAccountRepository.setDefault(
+        userId,
+        accountId,
+        client
+      );
 
       await client.query("COMMIT");
 
@@ -210,8 +205,7 @@ const defaultAccount =
     }
   }
 
-    async deleteBankAccount(userId, accountId) {
-        
+  async deleteBankAccount(userId, accountId) {
     const account = await bankAccountRepository.findById(accountId);
 
     if (!account) {
@@ -222,21 +216,19 @@ const defaultAccount =
       throw new Error("You are not authorized to delete this bank account.");
     }
 
-    // Prevent deleting default account
     if (account.is_default) {
       throw new Error(
         "Default bank account cannot be deleted. Please set another account as default first."
       );
     }
 
-    const hasPendingWithdrawals =
-  await bankAccountRepository.hasPendingWithdrawal(accountId);
+    const hasPendingWithdrawals = await bankAccountRepository.hasPendingWithdrawal(accountId);
 
-if (hasPendingWithdrawals) {
-  throw new Error(
-    "Cannot delete bank account while a withdrawal request is pending."
-  );
-}
+    if (hasPendingWithdrawals) {
+      throw new Error(
+        "Cannot delete bank account while a withdrawal request is pending."
+      );
+    }
 
     await bankAccountRepository.softDelete(accountId);
 
@@ -266,7 +258,6 @@ if (hasPendingWithdrawals) {
     };
   }
 
-  
   async rejectAccount(accountId, adminId) {
     const account = await bankAccountRepository.findById(accountId);
 
@@ -286,14 +277,6 @@ if (hasPendingWithdrawals) {
       ),
     };
   }
-
-
-  
-  
-
-
-
-
 }
 
 module.exports = new BankAccountService();
