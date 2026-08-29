@@ -2548,3 +2548,36 @@ body, #root, .app-container, .main-content {
   gap: 0.75rem !important;
 }
 
+/* Wallet Page Grid Fixes */
+.wallet-page-container {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.wallet-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.25rem !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1024px) {
+  .wallet-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .wallet-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.wallet-stat-card {
+  min-height: 140px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+

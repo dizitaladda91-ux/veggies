@@ -40,15 +40,19 @@ class AuthService {
       [cleanEmail, otpHash, expiresAt]
     );
 
-    // Print generated OTP in server logs for instant debugging
     logger.info(`=======================================================`);
     logger.info(`[REGISTRATION OTP GENERATED] Target Email: ${cleanEmail}`);
     logger.info(`[REGISTRATION OTP CODE] ${otpCode}`);
     logger.info(`=======================================================`);
 
-    emailService.sendRegistrationOtp(cleanEmail, otpCode).catch((err) =>
-      logger.error('Failed to send registration OTP', { error: err.message })
-    );
+    const result = await emailService.sendRegistrationOtp(cleanEmail, otpCode);
+    if (!result.success) {
+      logger.error(`[EMAIL DELIVERY FAILURE] Failed to send OTP to ${cleanEmail}: ${result.error || result.reason}`);
+      if (result.reason === 'Email service disabled') {
+        throw ApiError.badRequest('Server email service is disabled. Please configure EMAIL_ENABLED=true and Gmail credentials in Render environment variables.');
+      }
+      throw ApiError.badRequest(`Failed to deliver email: ${result.error || 'SMTP delivery failure. Check Gmail App Password in Render.'}`);
+    }
 
     return {
       message: '6-digit verification code sent to your official email.'
