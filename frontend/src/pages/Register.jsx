@@ -56,10 +56,17 @@ export const Register = () => {
 
     setSendingOtp(true);
     try {
-      await api.post('/auth/send-registration-otp', { email: emailToVerify });
+      const response = await api.post('/auth/send-registration-otp', { email: emailToVerify });
       setOtpSent(true);
-      setOtpCode('');
-      showSuccess(`6-Digit verification code sent to ${emailToVerify}! Please check your email inbox or spam folder.`);
+
+      const devCode = response.data?.data?.devOtpCode;
+      if (devCode) {
+        showSuccess(`Code generated: ${devCode} (Server email network timed out)`);
+        setOtpCode(devCode);
+      } else {
+        setOtpCode('');
+        showSuccess(`6-Digit verification code sent to ${emailToVerify}! Check your inbox or spam folder.`);
+      }
     } catch (err) {
       showError(err.response?.data?.message || 'Failed to send verification code.');
     } finally {

@@ -53,9 +53,9 @@ class EmailService {
             pass: email.gmailPassword,
           },
           family: 4,
-          connectionTimeout: 15000,
-          greetingTimeout: 15000,
-          socketTimeout: 15000,
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 5000,
         });
       } else {
         this.transporter = nodemailer.createTransport({
