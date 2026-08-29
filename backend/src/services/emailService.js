@@ -1,6 +1,16 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 const config = require('../config/env');
 const logger = require('../utils/logger');
+
+// Force Node.js DNS to resolve IPv4 addresses first (prevents ENETUNREACH on Render/Cloud hosts)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
+const ipv4Lookup = (hostname, options, callback) => {
+  dns.lookup(hostname, { family: 4 }, callback);
+};
 
 class EmailService {
   constructor() {
@@ -31,6 +41,7 @@ class EmailService {
             pass: email.smtpPassword,
           },
           family: 4,
+          lookup: ipv4Lookup,
         });
       } else if (email.provider === 'sendgrid') {
         this.transporter = nodemailer.createTransport({
@@ -42,6 +53,7 @@ class EmailService {
             pass: email.sendgridApiKey,
           },
           family: 4,
+          lookup: ipv4Lookup,
         });
       } else if (email.provider === 'gmail') {
         this.transporter = nodemailer.createTransport({
@@ -53,9 +65,10 @@ class EmailService {
             pass: email.gmailPassword,
           },
           family: 4,
-          connectionTimeout: 5000,
-          greetingTimeout: 5000,
-          socketTimeout: 5000,
+          lookup: ipv4Lookup,
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 10000,
         });
       } else {
         this.transporter = nodemailer.createTransport({
@@ -67,10 +80,11 @@ class EmailService {
             pass: email.testPassword,
           },
           family: 4,
+          lookup: ipv4Lookup,
         });
       }
 
-      logger.info(`Email transporter initialized with provider: ${email.provider} (IPv4 enforced)`);
+      logger.info(`Email transporter initialized with provider: ${email.provider} (Strict IPv4 DNS enforced)`);
     } catch (error) {
       logger.error('Failed to initialize email transporter:', error);
     }
