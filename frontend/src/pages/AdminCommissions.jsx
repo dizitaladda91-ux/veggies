@@ -4,7 +4,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { useNotification } from '../hooks/useNotification';
-import { Percent, Search, CheckCircle2, XCircle, Clock, DollarSign, Filter, Sparkles, UserCheck } from 'lucide-react';
+import { Percent, Search, CheckCircle2, XCircle, Clock, DollarSign, Filter, Sparkles, UserCheck, Zap, History } from 'lucide-react';
 
 export const AdminCommissions = () => {
   const [items, setItems] = useState([]);
@@ -12,6 +12,7 @@ export const AdminCommissions = () => {
   const [activeTab, setActiveTab] = useState('PENDING');
   const [search, setSearch] = useState('');
   const [processingId, setProcessingId] = useState(null);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
   const { showSuccess, showError } = useNotification();
 
   const load = async () => {
@@ -44,6 +45,51 @@ export const AdminCommissions = () => {
       showError(err.response?.data?.message || `Failed to update status to ${newStatus}`);
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleSettleAllNow = async () => {
+    const pendingList = items.filter((i) => (i.status || '').toUpperCase() === 'PENDING');
+    if (pendingList.length === 0) {
+      showError('No pending commissions to settle.');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to settle ALL ${pendingList.length} pending commissions now?`)) {
+      return;
+    }
+
+    setBulkProcessing(true);
+    try {
+      let count = 0;
+      for (const item of pendingList) {
+        await api.patch(`/commissions/${item.id}/status`, { status: 'approved' });
+        count++;
+      }
+      showSuccess(`Successfully settled ${count} commissions and credited wallet balances! ⚡`);
+      load();
+    } catch (err) {
+      showError('Failed to settle all commissions.');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleSettleMatured = async () => {
+    setBulkProcessing(true);
+    try {
+      const res = await api.post('/commissions/auto-settle', { holdDays: 7 });
+      const { settledCount, totalSettledAmount } = res.data.data || {};
+      showSuccess(
+        settledCount > 0
+          ? `Auto-settled ${settledCount} commissions (>7 Days) totaling ₹${totalSettledAmount.toFixed(2)}! ⌛`
+          : 'No matured pending commissions (>7 Days) found to settle.'
+      );
+      load();
+    } catch (err) {
+      showError('Failed to run auto-settlement.');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -90,14 +136,21 @@ export const AdminCommissions = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="bg-emerald-900/40 px-4 py-2 rounded-xl border border-emerald-500/30">
-            <span className="text-xs text-emerald-300 block font-semibold">Pending Value</span>
-            <span className="text-lg font-bold text-amber-400">₹{pendingTotal.toFixed(2)}</span>
-          </div>
-          <div className="bg-emerald-900/40 px-4 py-2 rounded-xl border border-emerald-500/30">
-            <span className="text-xs text-emerald-300 block font-semibold">Approved Value</span>
-            <span className="text-lg font-bold text-emerald-400">₹{approvedTotal.toFixed(2)}</span>
-          </div>
+          <Button
+            loading={bulkProcessing}
+            onClick={handleSettleAllNow}
+            className="btn-primary text-xs py-2.5 px-4 font-bold bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 shadow-lg"
+          >
+            <Zap className="w-4 h-4 fill-amber-300 text-amber-300" /> ⚡ Settle ALL Pending Now
+          </Button>
+
+          <Button
+            loading={bulkProcessing}
+            onClick={handleSettleMatured}
+            className="btn-secondary text-xs py-2.5 px-4 font-bold flex items-center gap-1.5"
+          >
+            <History className="w-4 h-4 text-emerald-400" /> ⌛ Settle Matured (&gt;7 Days)
+          </Button>
         </div>
       </div>
 

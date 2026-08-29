@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Copy, Check, Send, CheckCircle2, DollarSign } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
@@ -56,6 +56,9 @@ export const AdminWithdrawals = () => {
   const [payoutPage, setPayoutPage] = useState(1);
   const [dialog, setDialog] = useState(null);
   const [detail, setDetail] = useState('');
+  const [utrModal, setUtrModal] = useState(null);
+  const [utrNumber, setUtrNumber] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const { showSuccess, showError } = useNotification();
 
@@ -79,9 +82,46 @@ export const AdminWithdrawals = () => {
     load();
   }, [withdrawalPage, payoutPage, withdrawalStatus, payoutStatus, payoutGateway]);
 
+  const copyToClipboard = (text, id) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    showSuccess(`Copied: ${text}`);
+    setTimeout(() => setCopiedId(null), 2500);
+  };
+
   const openDialog = (type, item) => {
     setDetail('');
     setDialog({ type, item });
+  };
+
+  const openUtrModal = (item) => {
+    setUtrNumber('');
+    setUtrModal(item);
+  };
+
+  const submitUtrModal = async (e) => {
+    e.preventDefault();
+    if (!utrNumber.trim()) {
+      showError('Please enter the Transaction ID / UTR Reference Number.');
+      return;
+    }
+
+    try {
+      // 1. Create Payout if not exists
+      let payoutItem = payouts.items?.find((p) => String(p.withdraw_request_id) === String(utrModal.id));
+      if (!payoutItem) {
+        payoutItem = await createPayout({ withdrawRequestId: utrModal.id, gateway: 'BANK_TRANSFER' });
+      }
+
+      // 2. Mark as completed with UTR
+      await updatePayout(payoutItem.id || payoutItem.data?.id, 'complete', { transactionReference: utrNumber.trim() });
+      showSuccess(`Payout for ${utrModal.withdrawal_number} confirmed with UTR ${utrNumber.trim()}! ✅`);
+      setUtrModal(null);
+      load();
+    } catch (err) {
+      showError(err.message || 'Failed to submit UTR reference.');
+    }
   };
 
   const approve = async (item) => {
@@ -91,26 +131,6 @@ export const AdminWithdrawals = () => {
       load();
     } catch (error) {
       showError(error.message || 'Approval failed.');
-    }
-  };
-
-  const create = async (item) => {
-    try {
-      await createPayout({ withdrawRequestId: item.id, gateway: 'BANK_TRANSFER' });
-      showSuccess('Payout created.');
-      load();
-    } catch (error) {
-      showError(error.message || 'Payout creation failed.');
-    }
-  };
-
-  const approvePayoutRequest = async (item) => {
-    try {
-      await approvePayout(item.id);
-      showSuccess('Payout approved. A different administrator can now process it.');
-      load();
-    } catch (error) {
-      showError(error.message || 'Payout approval failed.');
     }
   };
 
@@ -209,179 +229,179 @@ export const AdminWithdrawals = () => {
   };
 
   return (
-    <div className="financial-admin-page">
-      <div className="page-heading">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div>
-            <h1>Withdrawal & Payout Management</h1>
-            <p>Review requests, auto-fetch bank details, and pay affiliates via 1-click Razorpay or Bank Transfer.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Button variant="secondary" size="sm" onClick={handleExportWithdrawals}>
-              📥 Export Withdrawals CSV
-            </Button>
-            <Button variant="secondary" size="sm" onClick={handleExportPayouts}>
-              📥 Export Payouts CSV
-            </Button>
-          </div>
+    <div className="financial-admin-page p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-emerald-950/40 p-6 rounded-2xl border border-emerald-500/20">
+        <div>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+            <DollarSign className="w-8 h-8 text-emerald-400" /> Withdrawal & Payout Management
+          </h1>
+          <p className="text-emerald-200/70 text-sm mt-1">
+            Review requests, copy affiliate UPI IDs with 1-click, and confirm payouts via GPay/PhonePe UTR.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={handleExportWithdrawals}>
+            📥 Export Withdrawals CSV
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleExportPayouts}>
+            📥 Export Payouts CSV
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <div className="financial-card-heading">
+      <Card className="glass-card p-6 border-emerald-500/20">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2>Withdrawal requests</h2>
-            <p>Approve valid requests, auto-fetch affiliate bank details, or pay directly via Razorpay.</p>
+            <h2 className="text-lg font-bold text-white">Withdrawal requests</h2>
+            <p className="text-xs text-emerald-200/70">Approve requests, copy UPI handles, and enter UTR references.</p>
           </div>
-          <Filter size={18} />
+          <Filter size={18} className="text-emerald-400" />
         </div>
 
-        <div className="financial-filters">
-          <label>
-            Status
-            <select
-              value={withdrawalStatus}
-              onChange={(e) => {
-                setWithdrawalStatus(e.target.value);
-                setWithdrawalPage(1);
-              }}
-            >
-              {withdrawalStatuses.map((status) => (
-                <option value={status} key={status || 'all'}>
-                  {status || 'All statuses'}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="mb-4">
+          <select
+            value={withdrawalStatus}
+            onChange={(e) => {
+              setWithdrawalStatus(e.target.value);
+              setWithdrawalPage(1);
+            }}
+            className="form-input bg-emerald-950/60 border-emerald-500/30 text-white text-xs py-2 px-3 rounded-xl"
+          >
+            {withdrawalStatuses.map((status) => (
+              <option value={status} key={status || 'all'}>
+                {status ? status.toUpperCase() : 'ALL STATUSES'}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="admin-withdrawal-list">
-          {withdrawals.items?.map((item) => (
-            <article className="bank-account-item financial-record" key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div>
-                <strong>
-                  {formatCurrency(item.amount)} · {item.withdrawal_number}
-                </strong>
-                <p style={{ margin: '0.25rem 0', fontWeight: 600, color: 'var(--primary)' }}>
-                  Affiliate: {item.user_email || item.user_id}
-                </p>
-                {item.account_number ? (
-                  <div style={{ fontSize: '0.8125rem', color: '#38bdf8', marginTop: '0.25rem' }}>
-                    🏦 <strong>{item.bank_name || 'Bank Account'}</strong> · A/C: <code>{item.account_number}</code> · IFSC: <code>{item.ifsc_code}</code> · Holder: <strong>{item.account_name}</strong>
+        <div className="space-y-4">
+          {withdrawals.items?.map((item) => {
+            const upiTarget = item.upi_id || item.phone || '';
+            return (
+              <article
+                key={item.id}
+                className="p-5 rounded-2xl border border-emerald-500/20 bg-emerald-950/40 hover:border-emerald-500/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              >
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-base font-extrabold text-white">
+                      {formatCurrency(item.amount)}
+                    </span>
+                    <span className="font-mono text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+                      #{item.withdrawal_number}
+                    </span>
+                    <Badge status={item.status}>{item.status}</Badge>
                   </div>
-                ) : item.upi_id ? (
-                  <div style={{ fontSize: '0.8125rem', color: '#38bdf8', marginTop: '0.25rem' }}>
-                    📱 <strong>UPI ID:</strong> <code>{item.upi_id}</code> · Name: <strong>{item.account_name}</strong>
-                  </div>
-                ) : null}
-                <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '0.25rem' }}>
-                  Requested: {formatDate(item.created_at)} {item.notes ? `· Note: ${item.notes}` : ''}
-                </small>
-              </div>
 
-              <div className="bank-account-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <Badge status={item.status}>{item.status}</Badge>
-                {['pending', 'approved'].includes(item.status) && (
-                  <Button variant="primary" size="sm" onClick={() => handlePayRazorpay(item)}>
-                    💳 Pay via Razorpay
-                  </Button>
-                )}
-                {item.status === 'pending' && (
-                  <>
-                    <Button size="sm" variant="secondary" onClick={() => approve(item)}>
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="danger" onClick={() => openDialog('reject', item)}>
-                      Reject
-                    </Button>
-                  </>
-                )}
-              </div>
-            </article>
-          ))}
+                  <p className="text-xs text-emerald-300 font-semibold">
+                    Affiliate: {item.account_name || item.user_email || item.user_id} ({item.user_email})
+                  </p>
+
+                  {item.upi_id ? (
+                    <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-900/30 p-2 rounded-xl border border-emerald-500/20 w-fit">
+                      <span>📱 <strong>UPI ID:</strong> <code className="text-amber-300 font-bold">{item.upi_id}</code></span>
+                      <button
+                        onClick={() => copyToClipboard(item.upi_id, `upi-${item.id}`)}
+                        className="p-1 hover:bg-emerald-500/20 rounded-md text-emerald-400 flex items-center gap-1 font-bold text-[11px]"
+                        title="Copy UPI ID"
+                      >
+                        {copiedId === `upi-${item.id}` ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedId === `upi-${item.id}` ? 'Copied!' : 'Copy UPI'}
+                      </button>
+                    </div>
+                  ) : item.account_number ? (
+                    <div className="text-xs text-emerald-300/80 space-y-0.5 bg-emerald-900/20 p-2 rounded-xl border border-emerald-500/10">
+                      <div>🏦 <strong>{item.bank_name || 'Bank Account'}</strong> · A/C: <code>{item.account_number}</code></div>
+                      <div>IFSC: <code>{item.ifsc_code}</code> · Holder: <strong>{item.account_name}</strong></div>
+                    </div>
+                  ) : null}
+
+                  <small className="text-[11px] text-emerald-300/60 block">
+                    Requested: {formatDate(item.created_at)} {item.notes ? `· Note: ${item.notes}` : ''}
+                  </small>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 border-t lg:border-t-0 border-emerald-500/20 pt-4 lg:pt-0">
+                  {['pending', 'approved'].includes(item.status) && (
+                    <>
+                      <Button
+                        onClick={() => openUtrModal(item)}
+                        className="btn-primary text-xs py-2 px-3 bg-gradient-to-r from-emerald-600 to-lime-600 hover:from-emerald-500 hover:to-lime-500 text-white font-bold flex items-center gap-1 shadow-lg"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> ✅ Mark Paid (GPay / PhonePe / UTR)
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handlePayRazorpay(item)}
+                        className="text-xs"
+                      >
+                        💳 Razorpay
+                      </Button>
+                    </>
+                  )}
+
+                  {item.status === 'pending' && (
+                    <>
+                      <Button size="sm" variant="secondary" onClick={() => approve(item)}>
+                        Approve
+                      </Button>
+                      <Button size="sm" variant="danger" onClick={() => openDialog('reject', item)}>
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </article>
+            );
+          })}
           {!loading && withdrawals.items?.length === 0 && <p className="empty-state">No withdrawal requests match this filter.</p>}
         </div>
         <Paging pagination={withdrawals.pagination} onChange={setWithdrawalPage} />
       </Card>
 
-      <Card>
-        <div className="financial-card-heading">
-          <div>
-            <h2>Payouts</h2>
-            <p>Record bank reference or verify Razorpay automated payouts.</p>
-          </div>
-          <Filter size={18} />
-        </div>
+      {/* UTR Confirmation Modal */}
+      {utrModal && (
+        <div className="financial-modal-backdrop" role="presentation">
+          <form onSubmit={submitUtrModal} className="financial-modal glass-card p-6 rounded-2xl border border-emerald-500/30 max-w-md w-full space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" /> Confirm GPay / PhonePe Payout
+              </h2>
+              <button type="button" onClick={() => setUtrModal(null)} className="text-emerald-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
 
-        <div className="financial-filters">
-          <label>
-            Status
-            <select
-              value={payoutStatus}
-              onChange={(e) => {
-                setPayoutStatus(e.target.value);
-                setPayoutPage(1);
-              }}
-            >
-              {payoutStatuses.map((status) => (
-                <option value={status} key={status || 'all'}>
-                  {status || 'All statuses'}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Gateway
-            <select
-              value={payoutGateway}
-              onChange={(e) => {
-                setPayoutGateway(e.target.value);
-                setPayoutPage(1);
-              }}
-            >
-              <option value="">All gateways</option>
-              <option value="BANK_TRANSFER">Bank transfer</option>
-              <option value="MANUAL">Manual</option>
-              <option value="RAZORPAY">Razorpay</option>
-            </select>
-          </label>
-        </div>
+            <p className="text-xs text-emerald-200/70">
+              Enter the Transaction ID / UTR No. for <strong>{utrModal.withdrawal_number}</strong> (Amount: <strong>{formatCurrency(utrModal.amount)}</strong>).
+            </p>
 
-        <div className="admin-withdrawal-list">
-          {payouts.items?.map((item) => (
-            <article className="bank-account-item financial-record" key={item.id}>
-              <div>
-                <strong>
-                  {item.payout_number} · {formatCurrency(item.amount)}
-                </strong>
-                <p>
-                  {item.gateway} · {item.transaction_reference || 'Reference not recorded'}
-                </p>
-                <small>Created {formatDate(item.created_at)}</small>
-                <small>Approval: {item.approval_status || 'PENDING'}</small>
-                {item.failure_reason && <small className="financial-error">Failure reason: {item.failure_reason}</small>}
-              </div>
-              <div className="bank-account-actions">
-                <Badge status={item.status}>{item.status}</Badge>
-                {item.status === 'PENDING' && item.approval_status !== 'APPROVED' && (
-                  <Button onClick={() => approvePayoutRequest(item)}>Approve</Button>
-                )}
-                {item.status === 'PENDING' && item.approval_status === 'APPROVED' && (
-                  <Button onClick={() => openDialog('process', item)}>Process</Button>
-                )}
-                {item.status === 'PROCESSING' && <Button onClick={() => openDialog('complete', item)}>Complete</Button>}
-                {['PENDING', 'PROCESSING'].includes(item.status) && (
-                  <Button variant="danger" onClick={() => openDialog('fail', item)}>
-                    Fail
-                  </Button>
-                )}
-              </div>
-            </article>
-          ))}
-          {!loading && payouts.items?.length === 0 && <p className="empty-state">No payouts match this filter.</p>}
+            <label className="block text-xs font-semibold text-emerald-300">
+              Transaction ID / UTR Reference No. *
+              <input
+                type="text"
+                autoFocus
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value)}
+                placeholder="e.g. UTR-660520178021 or 4029104810"
+                className="form-input mt-1 w-full bg-emerald-950/80 border-emerald-500/40 text-white font-mono text-sm py-2.5 px-3 rounded-xl"
+                required
+              />
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button type="button" variant="secondary" onClick={() => setUtrModal(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+                Confirm & Submit UTR
+              </Button>
+            </div>
+          </form>
         </div>
-        <Paging pagination={payouts.pagination} onChange={setPayoutPage} />
-      </Card>
+      )}
 
       {dialog && (
         <div className="financial-modal-backdrop" role="presentation">

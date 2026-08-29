@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, CheckCircle2, MailCheck, UserRound } from 'lucide-react';
+import { Camera, CheckCircle2, MailCheck, UserRound, Mail } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -15,6 +15,7 @@ export const Profile = () => {
     firstName: user?.first_name || '',
     lastName: user?.last_name || '',
     email: user?.email || '',
+    officialEmail: user?.official_email || user?.email || '',
     company: user?.company || '',
     phone: user?.phone || '',
     avatarUrl: user?.avatar_url || '',
@@ -56,6 +57,7 @@ export const Profile = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
+        officialEmail: formData.officialEmail,
         company: formData.company,
         phone: formData.phone,
         avatarUrl: formData.avatarUrl,
@@ -64,7 +66,7 @@ export const Profile = () => {
       });
       setUser(updatedUser);
       setFormData((current) => ({ ...current, currentPassword: '', newPassword: '', confirmPassword: '' }));
-      showSuccess('Your profile has been updated.');
+      showSuccess('Your profile and official notification email have been updated. ✅');
     } catch (error) {
       showError(error.message || 'Unable to update your profile.');
     } finally {
@@ -90,7 +92,7 @@ export const Profile = () => {
   return (
     <div className="profile-page">
       <div className="profile-page-heading">
-        <div><h1>My profile</h1><p>Update your photo, personal details, email address, and password.</p></div>
+        <div><h1>My profile</h1><p>Update your photo, personal details, official notification email, and password.</p></div>
       </div>
       <form onSubmit={handleSubmit}>
         <Card className="profile-card">
@@ -104,13 +106,34 @@ export const Profile = () => {
           <Input label="Or use an image URL" name="avatarUrl" placeholder="https://example.com/my-photo.jpg" value={formData.avatarUrl} onChange={change} />
         </Card>
 
-        <Card className="profile-card">
-          <h2>Personal details</h2>
+        <Card className="profile-card space-y-4">
+          <h2>Personal & Notification Details</h2>
           <div className="profile-two-columns">
-            <Input label="First name" name="firstName" value={formData.firstName} onChange={change} required />
-            <Input label="Last name" name="lastName" value={formData.lastName} onChange={change} required />
+            <Input label="First name *" name="firstName" value={formData.firstName} onChange={change} required />
+            <Input label="Last name *" name="lastName" value={formData.lastName} onChange={change} required />
           </div>
-          <Input label="Email address" type="email" name="email" value={formData.email} onChange={change} required />
+
+          <Input label="Account Username / Login ID *" type="text" name="email" value={formData.email} onChange={change} required />
+
+          {/* Official Email Notification Input Box */}
+          <div className="bg-emerald-950/40 p-4 rounded-xl border border-emerald-500/30 space-y-1">
+            <label className="block text-xs font-bold text-amber-300 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-amber-400" /> OFFICIAL NOTIFICATION EMAIL (VALID ACTIVE EMAIL) *
+            </label>
+            <input
+              type="email"
+              name="officialEmail"
+              placeholder="e.g. yourname@gmail.com (Valid Active Email)"
+              className="form-input bg-emerald-950/80 border-amber-500/40 text-amber-300 font-medium text-xs py-2.5 px-3 rounded-xl w-full"
+              value={formData.officialEmail}
+              onChange={change}
+              required
+            />
+            <span className="text-[11px] text-emerald-200/70 block mt-1">
+              📧 Password reset links, earnings alerts, & payout receipts will be dispatched to this valid email.
+            </span>
+          </div>
+
           <div className={`email-verification-status ${isEmailVerified ? 'is-verified' : 'is-unverified'}`}>
             <div>
               {isEmailVerified ? <CheckCircle2 size={18} /> : <MailCheck size={18} />}
@@ -118,6 +141,7 @@ export const Profile = () => {
             </div>
             {!isEmailVerified && <Button type="button" variant="secondary" loading={sendingVerification} onClick={resendVerification}>Resend verification email</Button>}
           </div>
+
           <div className="profile-two-columns">
             <Input label="Company or brand name" name="company" value={formData.company} onChange={change} />
             <Input label="Phone number" name="phone" value={formData.phone} onChange={change} />

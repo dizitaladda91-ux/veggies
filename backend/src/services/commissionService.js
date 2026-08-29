@@ -17,8 +17,9 @@ class CommissionService {
   }
 
   async updateCommissionStatus(commissionId, status) {
+    const targetStatus = String(status || '').toLowerCase();
     const validStatuses = ['pending', 'approved', 'rejected', 'paid'];
-    if (!validStatuses.includes(status)) {
+    if (!validStatuses.includes(targetStatus)) {
       throw ApiError.badRequest(`Status must be one of: ${validStatuses.join(', ')}`);
     }
 
@@ -36,13 +37,13 @@ class CommissionService {
         throw ApiError.notFound('Commission record not found');
       }
 
-      const previousStatus = comm.status;
+      const previousStatus = String(comm.status || '').toLowerCase();
 
       // Update commission status
-      const updated = await commissionRepository.updateCommissionStatus(commissionId, status, client);
+      const updated = await commissionRepository.updateCommissionStatus(commissionId, targetStatus, client);
 
       // If transitioning to 'approved' or 'paid' from 'pending' or 'rejected', credit affiliate wallet
-      if ((status === 'approved' || status === 'paid') && (previousStatus === 'pending' || previousStatus === 'rejected')) {
+      if ((targetStatus === 'approved' || targetStatus === 'paid') && (previousStatus === 'pending' || previousStatus === 'rejected')) {
         const wallet = await walletRepository.findOrCreateByUserId(comm.affiliate_id, client);
         const lockedWallet = await walletRepository.lockWallet(wallet.id, client);
         const openingBalance = Number(lockedWallet.available_balance || 0);
@@ -67,7 +68,7 @@ class CommissionService {
             comm.amount,
             openingBalance,
             Number(walletUpdate.rows[0].available_balance),
-            `Commission ${status.toUpperCase()} by Admin`
+            `Commission ${targetStatus.toUpperCase()} by Admin`
           ]
         );
       }

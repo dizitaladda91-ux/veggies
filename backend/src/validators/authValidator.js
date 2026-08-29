@@ -2,6 +2,7 @@ const { body } = require('express-validator');
 
 const registerValidator = [
   body('email').isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
+  body('officialEmail').optional({ checkFalsy: true }).isEmail().withMessage('Please provide a valid official email address').normalizeEmail(),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
   body('firstName').notEmpty().withMessage('First name is required').trim(),
   body('lastName').notEmpty().withMessage('Last name is required').trim(),
@@ -16,10 +17,6 @@ const loginValidator = [
 ];
 
 const refreshTokenValidator = [
-  // The browser normally sends this credential as the HttpOnly cookie. Some
-  // clients serialize an absent body token as `null`; treat that the same as
-  // an omitted value and let the controller use the cookie (or return its
-  // normal authentication error if neither credential exists).
   body('refreshToken').optional({ values: 'null' }).isString().notEmpty(),
 ];
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react';
+import { Check, Eye, EyeOff, ShieldCheck, Sparkles, Mail } from 'lucide-react';
 import { AuthLayout } from '../components/layouts/AuthLayout';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -14,6 +14,7 @@ export const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
+    officialEmail: '',
     company: '',
     password: '',
     role: 'affiliate',
@@ -41,7 +42,11 @@ export const Register = () => {
     setLoading(true);
     try {
       const recruitmentCode = searchParams.get('ref');
-      const user = await register({ ...formData, ...(recruitmentCode && { recruitmentCode }) });
+      const user = await register({
+        ...formData,
+        officialEmail: formData.officialEmail || formData.email,
+        ...(recruitmentCode && { recruitmentCode }),
+      });
       showSuccess('Account created successfully!');
 
       switch (user.role_name) {
@@ -68,10 +73,10 @@ export const Register = () => {
 
   return (
     <AuthLayout title="Create your account" subtitle="Set up your partner profile in less than a minute." showAffiliateGuide>
-      <form className="register-form" onSubmit={handleSubmit}>
+      <form className="register-form space-y-4" onSubmit={handleSubmit}>
         <div className="register-name-grid">
           <Input
-            label="First name"
+            label="First name *"
             name="firstName"
             placeholder="Enter your first name"
             value={formData.firstName}
@@ -79,7 +84,7 @@ export const Register = () => {
             required
           />
           <Input
-            label="Last name"
+            label="Last name *"
             name="lastName"
             placeholder="Enter your last name"
             value={formData.lastName}
@@ -87,16 +92,37 @@ export const Register = () => {
             required
           />
         </div>
+
         <Input
-          label="Email address"
-          type="email"
+          label="Account Username / Login ID *"
+          type="text"
           name="email"
-          placeholder="yourname@gmail.com"
-          autoComplete="email"
+          placeholder="e.g. satyamalora or satyam@login"
+          autoComplete="username"
           value={formData.email}
           onChange={handleChange}
           required
         />
+
+        {/* Official Email Field */}
+        <div className="form-group bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-500/30 space-y-1">
+          <label className="form-label font-bold text-amber-300 flex items-center gap-1.5 text-xs">
+            <Mail className="w-4 h-4 text-amber-400" /> OFFICIAL NOTIFICATION EMAIL (VALID ACTIVE EMAIL) *
+          </label>
+          <input
+            type="email"
+            name="officialEmail"
+            placeholder="e.g. yourname@gmail.com (Valid Active Email)"
+            className="form-input bg-emerald-950/80 border-amber-500/40 text-amber-300 font-medium text-xs py-2.5 px-3 rounded-xl w-full"
+            value={formData.officialEmail}
+            onChange={handleChange}
+            required
+          />
+          <span className="text-[11px] text-emerald-200/70 block mt-1">
+            📧 Password reset links, earnings alerts, & payout receipts will be sent to this official email.
+          </span>
+        </div>
+
         <Input
           label="Company or brand name"
           name="company"
@@ -104,6 +130,7 @@ export const Register = () => {
           value={formData.company}
           onChange={handleChange}
         />
+
         <div className="form-group register-role-group">
           <div className="register-field-heading">
             <label className="form-label" htmlFor="account-role">How will you use Veggie?</label>
@@ -120,6 +147,7 @@ export const Register = () => {
             <option value="super_affiliate">I'll lead a team of affiliates</option>
           </select>
         </div>
+
         <div className="register-password-grid">
           <div className="form-group password-field">
             <label className="form-label" htmlFor="password">Create password</label>
@@ -141,6 +169,7 @@ export const Register = () => {
               </button>
             </div>
           </div>
+
           <div className="form-group password-field">
             <label className="form-label" htmlFor="confirmPassword">Confirm password</label>
             <div className="password-input-wrap">
@@ -160,6 +189,7 @@ export const Register = () => {
             </div>
           </div>
         </div>
+
         <p className="register-password-hint"><Check size={14} /> Use 8 or more characters for a secure password.</p>
         <div className="register-trust-note"><ShieldCheck size={16} /><span>Your details are protected with secure encryption.</span></div>
         <Button type="submit" loading={loading} className="register-submit">

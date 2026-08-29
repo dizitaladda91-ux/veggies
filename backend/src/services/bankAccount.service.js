@@ -21,15 +21,22 @@ class BankAccountService {
     try {
       await client.query("BEGIN");
 
-      // Check duplicate account number
-      const existingAccounts = await bankAccountRepository.findByUserId(userId);
+      // Fill UPI Payout System Fallbacks if bank details are omitted
+      const upiId = data.upiId || data.upi_id || null;
+      const bankName = data.bankName || (upiId ? 'UPI / PhonePe / GPay Payout' : 'Bank');
+      const accountNumber = data.accountNumber || upiId || 'UPI_PAYOUT';
+      const ifscCode = data.ifscCode || data.ifsc_code || 'UPI0000000';
 
+      // Check duplicate account number / upiId
+      const existingAccounts = await bankAccountRepository.findByUserId(userId);
       const duplicate = existingAccounts.find(
-        (account) => account.account_number === data.accountNumber
+        (account) =>
+          (account.account_number === accountNumber && accountNumber !== 'UPI_PAYOUT') ||
+          (upiId && account.upi_id === upiId)
       );
 
       if (duplicate) {
-        throw new Error("Bank account already exists.");
+        throw new Error("Payout account or UPI ID already registered.");
       }
 
       // First account becomes default automatically
@@ -55,7 +62,7 @@ class BankAccountService {
 
       const documentUrl = data.documentUrl || data.document_url || null;
 
-      // Create account
+      // Create account (Auto-Verified for instant withdrawal)
       const bankAccount = await client.query(
         `
         INSERT INTO affiliate_bank_accounts (
@@ -68,22 +75,23 @@ class BankAccountService {
           upi_id,
           account_type,
           document_url,
+          verification_status,
           is_default
         )
         VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,'VERIFIED',$10
         )
         RETURNING *;
         `,
         [
           userId,
           data.accountHolderName,
-          data.bankName,
-          data.accountNumber,
-          data.ifscCode,
-          data.branchName,
-          data.upiId,
-          data.accountType,
+          bankName,
+          accountNumber,
+          ifscCode,
+          data.branchName || null,
+          upiId,
+          data.accountType || 'SAVINGS',
           documentUrl,
           isDefault,
         ]

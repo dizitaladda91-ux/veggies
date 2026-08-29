@@ -17,7 +17,7 @@ const crypto = require('crypto');
 const mfaService = require('./mfaService');
 
 class AuthService {
-  async register({ email, password, firstName, lastName, company = null, role = 'affiliate', recruitmentCode = null, ipAddress = null }) {
+  async register({ email, password, firstName, lastName, company = null, role = 'affiliate', recruitmentCode = null, ipAddress = null, officialEmail = null }) {
     if (![ROLES.AFFILIATE, ROLES.SUPER_AFFILIATE].includes(role)) {
       throw ApiError.forbidden('Administrative accounts cannot be created through public registration');
     }
@@ -25,6 +25,8 @@ class AuthService {
     if (existingUser) {
       throw ApiError.conflict('Email address is already registered');
     }
+
+    const targetOfficialEmail = (officialEmail || email).trim().toLowerCase();
 
     const roleObj = await userRepository.getRoleByName(role);
     if (!roleObj) {
@@ -54,6 +56,7 @@ class AuthService {
       firstName,
       lastName,
       company,
+      officialEmail: targetOfficialEmail,
     });
 
     // Every affiliate account needs a wallet before it can receive a settled
@@ -95,7 +98,8 @@ class AuthService {
     setImmediate(async () => {
       try {
         emailService.sendWelcomeEmail({
-          email: user.email,
+          email: targetOfficialEmail || user.email,
+          official_email: targetOfficialEmail,
           firstName: profile.first_name,
           lastName: profile.last_name,
         }).catch(() => {});
@@ -104,7 +108,7 @@ class AuthService {
 
         notificationRepository.createForAdmins({
           title: 'New Affiliate Joined',
-          message: `New ${role.replace('_', ' ')} ${profile.first_name} ${profile.last_name || ''} (${user.email}) registered on the platform.`,
+          message: `New ${role.replace('_', ' ')} ${profile.first_name} ${profile.last_name || ''} (${user.email} | Official: ${targetOfficialEmail}) registered on the platform.`,
           type: 'new_affiliate',
         }).catch(() => {});
 
@@ -134,7 +138,11 @@ class AuthService {
   }
 
   async login({ email, password, ipAddress = null }) {
-    const user = await userRepository.findByEmail(email);
+    const cleanEmail = email.trim().toLowerCase();
+    let user = await userRepository.findByEmail(cleanEmail);
+    if (!user) {
+      user = await userRepository.findByOfficialEmail(cleanEmail);
+    }
     if (!user) {
       throw ApiError.unauthorized('Invalid email or password');
     }
@@ -256,7 +264,11 @@ class AuthService {
   }
 
   async requestPasswordReset(email) {
-    const user = await userRepository.findByEmail(email);
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    let user = await userRepository.findByEmail(cleanEmail);
+    if (!user) {
+      user = await userRepository.findByOfficialEmail(cleanEmail);
+    }
     if (!user) return { message: 'If that account exists, a reset link has been sent' };
 
     const token = crypto.randomBytes(32).toString('hex');
@@ -281,8 +293,6 @@ class AuthService {
   }
 
   async logout(userId) {
-    // Refresh-token rotation is stateful; clearing the stored token revokes
-    // this session immediately and makes subsequent refresh attempts fail.
     await userRepository.updateRefreshToken(userId, null);
     return { message: 'Logout successful' };
   }

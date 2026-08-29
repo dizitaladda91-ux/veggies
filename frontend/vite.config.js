@@ -20,16 +20,34 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  esbuild: {
+    drop: ["console", "debugger"],
+    legalComments: "none",
+  },
   build: {
     target: "es2022",
     cssTarget: "chrome90",
-    minify: 'esbuild',
-    cssMinify: 'esbuild',
+    minify: "esbuild",
+    cssMinify: "esbuild",
+    modulePreload: {
+      polyfill: false,
+    },
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          icons: ['lucide-react'],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+              return "vendor-react";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-icons";
+            }
+            if (id.includes("axios")) {
+              return "vendor-axios";
+            }
+            return "vendor-deps";
+          }
         },
       },
     },
