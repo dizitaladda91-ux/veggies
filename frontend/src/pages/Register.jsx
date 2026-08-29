@@ -56,9 +56,16 @@ export const Register = () => {
 
     setSendingOtp(true);
     try {
-      await api.post('/auth/send-registration-otp', { email: emailToVerify });
+      const response = await api.post('/auth/send-registration-otp', { email: emailToVerify });
       setOtpSent(true);
-      showSuccess(`6-Digit verification code sent to ${emailToVerify}! Check your inbox or spam.`);
+
+      const devCode = response.data?.data?.devOtpCode;
+      if (devCode) {
+        showSuccess(`[CODE GENERATED]: Your 6-Digit Code is ${devCode}`);
+        setOtpCode(devCode);
+      } else {
+        showSuccess(`6-Digit verification code sent to ${emailToVerify}! Check your inbox or spam folder.`);
+      }
     } catch (err) {
       showError(err.response?.data?.message || 'Failed to send verification code.');
     } finally {

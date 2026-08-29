@@ -40,11 +40,22 @@ class AuthService {
       [cleanEmail, otpHash, expiresAt]
     );
 
+    // Print generated OTP in server logs for instant debugging
+    logger.info(`=======================================================`);
+    logger.info(`[REGISTRATION OTP GENERATED] Target Email: ${cleanEmail}`);
+    logger.info(`[REGISTRATION OTP CODE] ${otpCode}`);
+    logger.info(`=======================================================`);
+
     emailService.sendRegistrationOtp(cleanEmail, otpCode).catch((err) =>
       logger.error('Failed to send registration OTP', { error: err.message })
     );
 
-    return { message: '6-digit verification code sent to your official email.' };
+    const isTestOrDev = config.env !== 'production' || !config.email.enabled || config.email.provider === 'test';
+
+    return {
+      message: '6-digit verification code sent to your official email.',
+      ...(isTestOrDev ? { devOtpCode: otpCode } : {}),
+    };
   }
 
   async verifyRegistrationOtp(email, otpCode) {
