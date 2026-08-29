@@ -351,8 +351,20 @@ class AuthService {
     await userRepository.savePasswordResetToken(user.id, hashed, expiresAt);
     
     const sendResult = await emailService.sendPasswordResetEmail(user, token);
+    const resetUrl = `${config.frontendUrl}/reset-password/${token}`;
+    
+    logger.info(`=======================================================`);
+    logger.info(`[PASSWORD RESET LINK GENERATED] Target Email: ${cleanEmail}`);
+    logger.info(`[PASSWORD RESET URL] ${resetUrl}`);
+    logger.info(`=======================================================`);
+
     if (!sendResult.success) {
       logger.error(`[PASSWORD RESET EMAIL FAILURE] Could not deliver reset email to ${cleanEmail}: ${sendResult.error || sendResult.reason}`);
+      
+      const isTimeout = (sendResult.error || '').includes('ETIMEDOUT') || (sendResult.error || '').includes('timeout');
+      if (isTimeout) {
+        throw ApiError.badRequest(`Render Cloud Host is blocking outbound SMTP port 587 (Connection timeout). Please add RESEND_API_KEY or BREVO_API_KEY in Render Environment Variables for HTTPS email delivery.`);
+      }
       throw ApiError.badRequest(`Failed to deliver password reset email: ${sendResult.error || sendResult.reason || 'SMTP delivery error.'}`);
     }
 
