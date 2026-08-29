@@ -80,6 +80,63 @@ class EmailService {
    * Send email with error handling and logging
    */
   async sendEmail(to, subject, htmlContent, textContent = null, attachments = []) {
+    // 1. Try Resend HTTPS API if key configured (Port 443 - 100% bypasses Render firewall)
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey) {
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM || 'Veggie Affiliate <onboarding@resend.dev>',
+            to: [to],
+            subject,
+            html: htmlContent
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          logger.info(`Email delivered via Resend API: ${subject} to ${to}`, { id: data.id });
+          return { success: true, messageId: data.id };
+        }
+        logger.error(`Resend API Error: ${JSON.stringify(data)}`);
+      } catch (err) {
+        logger.error(`Resend API Exception: ${err.message}`);
+      }
+    }
+
+    // 2. Try Brevo HTTPS API if key configured (Port 443 - 100% bypasses Render firewall)
+    const brevoKey = process.env.BREVO_API_KEY;
+    if (brevoKey) {
+      try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: 'Veggie Affiliate', email: process.env.GMAIL_USER || 'noreply@veggieradiance.com' },
+            to: [{ email: to }],
+            subject,
+            htmlContent
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          logger.info(`Email delivered via Brevo API: ${subject} to ${to}`, { messageId: data.messageId });
+          return { success: true, messageId: data.messageId };
+        }
+        logger.error(`Brevo API Error: ${JSON.stringify(data)}`);
+      } catch (err) {
+        logger.error(`Brevo API Exception: ${err.message}`);
+      }
+    }
+
+    // 3. Fallback to Nodemailer Transporter (SMTP / Gmail)
     if (!this.transporter) {
       logger.warn(`Email not sent (service disabled): ${subject} to ${to}`);
       return { success: false, reason: 'Email service disabled' };
@@ -96,11 +153,11 @@ class EmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      logger.info(`Email sent successfully: ${subject} to ${to}`, { messageId: info.messageId });
+      logger.info(`Email sent successfully via Nodemailer: ${subject} to ${to}`, { messageId: info.messageId });
 
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      logger.error(`Failed to send email: ${subject} to ${to}`, error);
+      logger.error(`Failed to send email via Nodemailer: ${subject} to ${to}`, error);
       return { success: false, error: error.message };
     }
   }

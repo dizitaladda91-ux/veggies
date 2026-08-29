@@ -47,17 +47,12 @@ class AuthService {
 
     const result = await emailService.sendRegistrationOtp(cleanEmail, otpCode);
     if (!result.success) {
-      logger.warn(`[EMAIL DELIVERY FAILURE]: SMTP connection timed out or failed (${result.error || result.reason}). Returning fallback code.`);
-      return {
-        message: `6-digit code generated. (Server email timed out). Code: ${otpCode}`,
-        devOtpCode: otpCode,
-        emailSent: false
-      };
+      logger.error(`[EMAIL DELIVERY FAILURE] Failed to send OTP to ${cleanEmail}: ${result.error || result.reason}`);
+      throw ApiError.badRequest(`Failed to send email to ${cleanEmail}. Error: ${result.error || result.reason || 'SMTP Connection Error'}`);
     }
 
     return {
-      message: '6-digit verification code sent to your official email.',
-      emailSent: true
+      message: '6-digit verification code sent to your official email.'
     };
   }
 
