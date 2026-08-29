@@ -3,13 +3,22 @@ const dns = require('dns');
 const config = require('../config/env');
 const logger = require('../utils/logger');
 
-// Force Node.js DNS to resolve IPv4 addresses first (prevents ENETUNREACH on Render/Cloud hosts)
+// Force Node.js DNS to resolve IPv4 addresses first
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
 
+// Strict IPv4-only resolver using dns.resolve4 (bypasses IPv6 AAAA lookup completely)
 const ipv4Lookup = (hostname, options, callback) => {
-  dns.lookup(hostname, { family: 4 }, callback);
+  const cb = typeof options === 'function' ? options : callback;
+  dns.resolve4(hostname, (err, addresses) => {
+    if (!err && addresses && addresses.length > 0) {
+      return cb(null, addresses[0], 4);
+    }
+    dns.lookup(hostname, { family: 4 }, (lookupErr, address) => {
+      cb(lookupErr, address, 4);
+    });
+  });
 };
 
 class EmailService {
@@ -84,7 +93,7 @@ class EmailService {
         });
       }
 
-      logger.info(`Email transporter initialized with provider: ${email.provider} (Strict IPv4 DNS enforced)`);
+      logger.info(`Email transporter initialized with provider: ${email.provider} (Strict IPv4 DNS enforced via resolve4)`);
     } catch (error) {
       logger.error('Failed to initialize email transporter:', error);
     }
@@ -386,11 +395,11 @@ class EmailService {
   /**
    * Send password reset email
    */
-  async sendPasswordResetEmail(user, resetToken) {
-    const userEmail = user.official_email || user.officialEmail || user.email;
+  async sendPasswordResetEmail(user, resetToken, targetEmail = null) {
+    const userEmail = targetEmail || user.official_email || user.officialEmail || user.email;
     const firstName = user.firstName || user.first_name || 'Affiliate';
     const resetLink = `${config.frontendUrl}/reset-password/${resetToken}`;
-    const subject = 'Reset Your Password';
+    const subject = 'Reset Your Password - Veggie Affiliate';
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

@@ -350,7 +350,7 @@ class AuthService {
 
     await userRepository.savePasswordResetToken(user.id, hashed, expiresAt);
     
-    const sendResult = await emailService.sendPasswordResetEmail(user, token);
+    const sendResult = await emailService.sendPasswordResetEmail(user, token, cleanEmail);
     const resetUrl = `${config.frontendUrl}/reset-password/${token}`;
     
     logger.info(`=======================================================`);
