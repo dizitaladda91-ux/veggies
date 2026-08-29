@@ -97,10 +97,44 @@ class EmailService {
   }
 
   /**
+   * Send 6-digit registration OTP verification code
+   */
+  async sendRegistrationOtp(email, otpCode) {
+    const subject = `Your Verification Code: ${otpCode} - Veggie Affiliate`;
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #04120e; color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.3);">
+        <h2 style="color: #10b981; text-align: center; margin-bottom: 8px;">VEGGIE AFFILIATE NETWORK</h2>
+        <p style="text-align: center; color: #a7f3d0; font-size: 14px; margin-bottom: 24px;">Official Email Verification Code</p>
+        
+        <p style="color: #e2e8f0; font-size: 15px;">Hello,</p>
+        <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+          Your 6-digit email verification code to complete your affiliate registration is:
+        </p>
+
+        <div style="background-color: rgba(16, 185, 129, 0.1); border: 2px dashed #10b981; border-radius: 12px; padding: 20px; text-align: center; margin: 25px 0;">
+          <span style="font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #34d399; font-family: monospace;">${otpCode}</span>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 13px; text-align: center;">
+          This code is valid for <strong>10 minutes</strong>. Please enter this code on the registration page to verify your official email.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 25px 0;" />
+        <p style="color: #64748b; font-size: 12px; text-align: center;">
+          If you did not request this code, please ignore this email.
+        </p>
+      </div>
+    `;
+
+    return this.sendEmail(email, subject, htmlContent);
+  }
+
+  /**
    * Send welcome email for new affiliates
    */
   async sendWelcomeEmail(affiliate) {
-    const { email: affiliateEmail, firstName } = affiliate;
+    const affiliateEmail = affiliate.official_email || affiliate.officialEmail || affiliate.email;
+    const firstName = affiliate.firstName || affiliate.first_name || 'Affiliate';
     const subject = 'Welcome to Our Affiliate Program!';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -134,7 +168,8 @@ class EmailService {
    * Send commission earned notification
    */
   async sendCommissionEmail(affiliate, commission) {
-    const { email: affiliateEmail, firstName } = affiliate;
+    const affiliateEmail = affiliate.official_email || affiliate.officialEmail || affiliate.email;
+    const firstName = affiliate.firstName || affiliate.first_name || 'Affiliate';
     const { amount, referral_code, created_at } = commission;
 
     const subject = `Commission Earned: ₹${Number(amount || 0).toFixed(2)}`;
@@ -172,7 +207,8 @@ class EmailService {
    * Send withdrawal request confirmation
    */
   async sendWithdrawalRequestEmail(user, withdrawal) {
-    const { email: userEmail, firstName } = user;
+    const userEmail = user.official_email || user.officialEmail || user.email;
+    const firstName = user.firstName || user.first_name || 'Affiliate';
     const { amount, status, requested_at, bank_account_number } = withdrawal;
 
     const subject = `Withdrawal Request Confirmation - ₹${Number(amount || 0).toFixed(2)}`;
@@ -211,7 +247,8 @@ class EmailService {
    * Send withdrawal approval notification
    */
   async sendWithdrawalApprovedEmail(user, withdrawal) {
-    const { email: userEmail, firstName } = user;
+    const userEmail = user.official_email || user.officialEmail || user.email;
+    const firstName = user.firstName || user.first_name || 'Affiliate';
     const { amount, approved_at } = withdrawal;
 
     const subject = `Withdrawal Approved - ₹${Number(amount || 0).toFixed(2)}`;
@@ -241,7 +278,8 @@ class EmailService {
    * Send withdrawal rejection notification
    */
   async sendWithdrawalRejectedEmail(user, withdrawal, reason) {
-    const { email: userEmail, firstName } = user;
+    const userEmail = user.official_email || user.officialEmail || user.email;
+    const firstName = user.firstName || user.first_name || 'Affiliate';
     const { amount } = withdrawal;
 
     const subject = `Withdrawal Request Declined - ₹${Number(amount || 0).toFixed(2)}`;
@@ -269,7 +307,8 @@ class EmailService {
    * Send password reset email
    */
   async sendPasswordResetEmail(user, resetToken) {
-    const { email: userEmail, firstName } = user;
+    const userEmail = user.official_email || user.officialEmail || user.email;
+    const firstName = user.firstName || user.first_name || 'Affiliate';
     const resetLink = `${config.frontendUrl}/reset-password/${resetToken}`;
     const subject = 'Reset Your Password';
 
@@ -300,6 +339,7 @@ class EmailService {
    * Send email verification link
    */
   async sendVerificationEmail(user, verificationToken) {
+    const userEmail = user.official_email || user.officialEmail || user.email;
     const verifyLink = `${config.frontendUrl}/verify-email/${verificationToken}`;
     const subject = 'Verify Your Email Address';
 
@@ -312,7 +352,7 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(user.email, subject, htmlContent);
+    return this.sendEmail(userEmail, subject, htmlContent);
   }
 
   /**

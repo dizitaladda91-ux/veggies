@@ -15,8 +15,72 @@ const walletRepository = require('../repositories/walletrepository');
 const { ROLES } = require('../constants/roles');
 const crypto = require('crypto');
 const mfaService = require('./mfaService');
+const db = require('../database');
 
 class AuthService {
+  async sendRegistrationOtp(email) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      throw ApiError.badRequest('Please enter a valid official email address');
+    }
+
+    const existingUser = await userRepository.findByEmail(cleanEmail);
+    const existingOfficial = await userRepository.findByOfficialEmail(cleanEmail);
+    if (existingUser || existingOfficial) {
+      throw ApiError.conflict('This email address is already registered.');
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await passwordUtils.hashPassword(otpCode);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await db.query(`DELETE FROM email_verification_otps WHERE LOWER(email) = $1`, [cleanEmail]);
+    await db.query(
+      `INSERT INTO email_verification_otps (email, otp_hash, expires_at) VALUES ($1, $2, $3)`,
+      [cleanEmail, otpHash, expiresAt]
+    );
+
+    emailService.sendRegistrationOtp(cleanEmail, otpCode).catch((err) =>
+      logger.error('Failed to send registration OTP', { error: err.message })
+    );
+
+    return { message: '6-digit verification code sent to your official email.' };
+  }
+
+  async verifyRegistrationOtp(email, otpCode) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const cleanCode = String(otpCode || '').trim();
+
+    if (!cleanEmail || cleanCode.length !== 6) {
+      throw ApiError.badRequest('Please provide email and 6-digit verification code.');
+    }
+
+    const res = await db.query(
+      `SELECT * FROM email_verification_otps 
+       WHERE LOWER(email) = $1 AND expires_at > CURRENT_TIMESTAMP AND is_verified = FALSE
+       ORDER BY created_at DESC LIMIT 1`,
+      [cleanEmail]
+    );
+
+    const record = res.rows[0];
+    if (!record) {
+      throw ApiError.badRequest('Invalid or expired 6-digit verification code. Please click Resend Code.');
+    }
+
+    const isMatch = await passwordUtils.comparePassword(cleanCode, record.otp_hash);
+    if (!isMatch) {
+      throw ApiError.badRequest('Incorrect 6-digit verification code. Please check your inbox or click Resend.');
+    }
+
+    const verifiedToken = crypto.randomBytes(24).toString('hex');
+    await db.query(
+      `UPDATE email_verification_otps SET is_verified = TRUE, verified_token = $1 WHERE id = $2`,
+      [verifiedToken, record.id]
+    );
+
+    return { message: 'Official email verified successfully! ✅', verifiedToken };
+  }
+
   async register({ email, password, firstName, lastName, company = null, role = 'affiliate', recruitmentCode = null, ipAddress = null, officialEmail = null }) {
     if (![ROLES.AFFILIATE, ROLES.SUPER_AFFILIATE].includes(role)) {
       throw ApiError.forbidden('Administrative accounts cannot be created through public registration');
@@ -59,8 +123,6 @@ class AuthService {
       officialEmail: targetOfficialEmail,
     });
 
-    // Every affiliate account needs a wallet before it can receive a settled
-    // commission or open the Wallet page.
     await walletRepository.findOrCreateByUserId(user.id);
 
     let primaryLink = null;
