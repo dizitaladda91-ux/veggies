@@ -45,12 +45,17 @@ class EmailService {
         });
       } else if (email.provider === 'gmail') {
         this.transporter = nodemailer.createTransport({
-          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
           auth: {
             user: email.gmailUser,
             pass: email.gmailPassword,
           },
           family: 4,
+          connectionTimeout: 15000,
+          greetingTimeout: 15000,
+          socketTimeout: 15000,
         });
       } else {
         this.transporter = nodemailer.createTransport({
