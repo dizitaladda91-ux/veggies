@@ -30,6 +30,7 @@ class EmailService {
             user: email.smtpUser,
             pass: email.smtpPassword,
           },
+          family: 4,
         });
       } else if (email.provider === 'sendgrid') {
         this.transporter = nodemailer.createTransport({
@@ -40,6 +41,7 @@ class EmailService {
             user: 'apikey',
             pass: email.sendgridApiKey,
           },
+          family: 4,
         });
       } else if (email.provider === 'gmail') {
         this.transporter = nodemailer.createTransport({
@@ -48,6 +50,7 @@ class EmailService {
             user: email.gmailUser,
             pass: email.gmailPassword,
           },
+          family: 4,
         });
       } else {
         this.transporter = nodemailer.createTransport({
@@ -58,10 +61,11 @@ class EmailService {
             user: email.testUser,
             pass: email.testPassword,
           },
+          family: 4,
         });
       }
 
-      logger.info(`Email transporter initialized with provider: ${email.provider}`);
+      logger.info(`Email transporter initialized with provider: ${email.provider} (IPv4 enforced)`);
     } catch (error) {
       logger.error('Failed to initialize email transporter:', error);
     }

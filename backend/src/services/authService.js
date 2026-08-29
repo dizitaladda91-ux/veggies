@@ -50,11 +50,8 @@ class AuthService {
       logger.error('Failed to send registration OTP', { error: err.message })
     );
 
-    const isTestOrDev = config.env !== 'production' || !config.email.enabled || config.email.provider === 'test';
-
     return {
-      message: '6-digit verification code sent to your official email.',
-      ...(isTestOrDev ? { devOtpCode: otpCode } : {}),
+      message: '6-digit verification code sent to your official email.'
     };
   }
 

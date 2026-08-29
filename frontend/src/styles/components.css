@@ -2456,3 +2456,95 @@ body, #root, .app-container, .main-content {
   border: 1px solid rgba(52, 211, 153, 0.3) !important;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(16, 185, 129, 0.18) !important;
 }
+
+/* Structured Payout Account Form Layout */
+.bank-account-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  width: 100% !important;
+}
+
+.payout-form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.4rem !important;
+  width: 100% !important;
+}
+
+.payout-form-group label {
+  display: block !important;
+  color: #a7f3d0 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.payout-field-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1rem !important;
+  width: 100% !important;
+}
+
+@media (max-width: 640px) {
+  .payout-field-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.payout-upi-card {
+  background: rgba(6, 44, 33, 0.6) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  border-radius: 0.85rem !important;
+  padding: 1.1rem !important;
+  display: flex !direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.payout-upi-card label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  color: #fbbf24 !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+}
+
+.payout-upi-input {
+  width: 100% !important;
+  background: rgba(4, 18, 14, 0.95) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  color: #fef08a !important;
+  font-family: monospace !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  padding: 0.7rem 0.9rem !important;
+  border-radius: 0.75rem !important;
+  box-sizing: border-box !important;
+}
+
+.payout-divider {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(52, 211, 153, 0.6) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  margin: 0.5rem 0 !important;
+}
+
+.payout-upload-box {
+  border: 2px dashed rgba(16, 185, 129, 0.35) !important;
+  background: rgba(4, 18, 14, 0.5) !important;
+  border-radius: 0.85rem !important;
+  padding: 1.25rem !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+

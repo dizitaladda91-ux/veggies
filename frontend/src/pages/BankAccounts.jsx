@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
-import { Badge } from '../components/common/Badge';
 import { createBankAccount, deleteBankAccount, fetchBankAccounts, setDefaultBankAccount } from '../services/walletService';
 import { useNotification } from '../hooks/useNotification';
-import { Building2, UploadCloud, CheckCircle2, AlertCircle, Trash2, Star, FileText, Smartphone, CreditCard } from 'lucide-react';
+import { Building2, UploadCloud, CheckCircle2, Trash2, Star, FileText, Smartphone } from 'lucide-react';
 
 const emptyForm = {
   accountHolderName: '',
@@ -109,30 +108,34 @@ export const BankAccounts = () => {
   };
 
   return (
-    <div className="bank-accounts-page max-w-7xl mx-auto p-6 space-y-6">
-      <div className="page-heading flex flex-col md:flex-row md:items-center justify-between gap-4 bg-emerald-950/40 p-6 rounded-2xl border border-emerald-500/20">
+    <div className="bank-accounts-page max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+      {/* Page Header Banner */}
+      <div className="page-heading flex flex-col md:flex-row md:items-center justify-between gap-4 bg-emerald-950/50 p-6 rounded-2xl border border-emerald-500/30 shadow-xl">
         <div>
-          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-black text-white flex items-center gap-3">
             <Smartphone className="w-8 h-8 text-emerald-400" /> UPI & Bank Payout Settings
           </h1>
-          <p className="text-emerald-200/70 text-sm mt-1">
+          <p className="text-emerald-200/80 text-sm mt-1">
             Set up your primary UPI ID (PhonePe / GPay / Paytm) or Bank Account for instant 1-click payouts.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Account Form */}
-        <Card className="glass-card p-6 border-emerald-500/20">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-emerald-400" /> Add Payout Account
-          </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left Column: Structured Account Form */}
+        <Card className="glass-card p-6 border-emerald-500/20 bg-emerald-950/40 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-2 border-b border-emerald-500/20 pb-3 mb-5">
+            <Smartphone className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-extrabold text-white">Add Payout Account</h2>
+          </div>
 
-          <form className="bank-account-form space-y-4" onSubmit={submit}>
-            <div>
-              <label className="block text-xs font-semibold text-emerald-300 mb-1">Account Holder Full Name *</label>
+          <form className="bank-account-form space-y-5" onSubmit={submit}>
+            {/* Account Holder Name */}
+            <div className="payout-form-group">
+              <label htmlFor="accountHolderName">Account Holder Full Name *</label>
               <input
-                className="form-input w-full bg-emerald-950/60 border-emerald-500/30 text-white text-sm py-2.5 px-3 rounded-xl"
+                id="accountHolderName"
+                className="form-input w-full bg-emerald-950/80 border-emerald-500/40 text-white font-medium text-sm py-2.5 px-3.5 rounded-xl outline-none focus:border-emerald-400"
                 name="accountHolderName"
                 placeholder="Full name as registered with UPI / Bank"
                 value={form.accountHolderName}
@@ -141,32 +144,36 @@ export const BankAccounts = () => {
               />
             </div>
 
-            {/* Primary Field: UPI ID / PhonePe / GPay Number */}
-            <div className="bg-emerald-900/30 p-4 rounded-xl border border-emerald-500/30 space-y-2">
-              <label className="block text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+            {/* Primary Highlighted UPI ID Box */}
+            <div className="payout-upi-card">
+              <label htmlFor="upiId" className="flex items-center gap-1.5 text-xs font-black text-amber-300">
                 <Smartphone className="w-4 h-4 text-amber-400" /> PRIMARY: UPI ID / PhonePe / GPay Mobile No.
               </label>
               <input
-                className="form-input w-full bg-emerald-950/80 border-amber-500/40 text-amber-300 font-mono font-bold text-sm py-2.5 px-3 rounded-xl"
+                id="upiId"
+                className="payout-upi-input"
                 name="upiId"
                 placeholder="e.g. 9876543210@ybl, name@okaxis, 9876543210"
                 value={form.upiId}
                 onChange={change}
               />
-              <p className="text-[11px] text-emerald-200/70">
+              <p className="text-[11px] text-emerald-200/80 leading-relaxed pt-1">
                 ⚡ Entering your UPI ID or 10-digit GPay/PhonePe number allows instant 1-click payouts without bank details!
               </p>
             </div>
 
-            <div className="text-center text-xs text-emerald-400/60 font-semibold uppercase tracking-wider my-2">
-              — OR Bank Details (Optional) —
+            {/* OR Divider */}
+            <div className="payout-divider">
+              <span>— OR Bank Details (Optional) —</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-emerald-300 mb-1">Bank Name (Optional)</label>
+            {/* Bank Details Grid Row 1 */}
+            <div className="payout-field-row">
+              <div className="payout-form-group">
+                <label htmlFor="bankName">Bank Name (Optional)</label>
                 <input
-                  className="form-input w-full bg-emerald-950/60 border-emerald-500/30 text-white text-xs py-2 px-3 rounded-xl"
+                  id="bankName"
+                  className="form-input w-full bg-emerald-950/70 border-emerald-500/30 text-white text-xs py-2.5 px-3 rounded-xl"
                   name="bankName"
                   placeholder="e.g. HDFC Bank, SBI"
                   value={form.bankName}
@@ -174,10 +181,11 @@ export const BankAccounts = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-emerald-300 mb-1">Account Type</label>
+              <div className="payout-form-group">
+                <label htmlFor="accountType">Account Type</label>
                 <select
-                  className="form-select w-full bg-emerald-950/60 border-emerald-500/30 text-white text-xs py-2 px-3 rounded-xl"
+                  id="accountType"
+                  className="form-select w-full bg-emerald-950/70 border-emerald-500/30 text-white text-xs py-2.5 px-3 rounded-xl"
                   name="accountType"
                   value={form.accountType}
                   onChange={change}
@@ -188,11 +196,13 @@ export const BankAccounts = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-emerald-300 mb-1">Account Number (Optional)</label>
+            {/* Bank Details Grid Row 2 */}
+            <div className="payout-field-row">
+              <div className="payout-form-group">
+                <label htmlFor="accountNumber">Account Number (Optional)</label>
                 <input
-                  className="form-input w-full bg-emerald-950/60 border-emerald-500/30 text-white text-xs py-2 px-3 rounded-xl"
+                  id="accountNumber"
+                  className="form-input w-full bg-emerald-950/70 border-emerald-500/30 text-white text-xs py-2.5 px-3 rounded-xl"
                   name="accountNumber"
                   inputMode="numeric"
                   placeholder="9 to 18 digit account number"
@@ -201,10 +211,11 @@ export const BankAccounts = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-emerald-300 mb-1">IFSC Code (Optional)</label>
+              <div className="payout-form-group">
+                <label htmlFor="ifscCode">IFSC Code (Optional)</label>
                 <input
-                  className="form-input w-full uppercase bg-emerald-950/60 border-emerald-500/30 text-white text-xs py-2 px-3 rounded-xl"
+                  id="ifscCode"
+                  className="form-input w-full uppercase bg-emerald-950/70 border-emerald-500/30 text-white text-xs py-2.5 px-3 rounded-xl"
                   name="ifscCode"
                   placeholder="e.g. HDFC0001234"
                   value={form.ifscCode}
@@ -213,11 +224,12 @@ export const BankAccounts = () => {
               </div>
             </div>
 
-            {/* Document Upload Box */}
-            <div className="border-2 border-dashed border-emerald-500/30 rounded-xl p-4 bg-emerald-950/40 text-center">
-              <label className="block text-xs font-semibold text-emerald-300 mb-2 flex items-center justify-center gap-2 cursor-pointer">
+            {/* Structured Document Upload Box */}
+            <div className="payout-upload-box">
+              <label className="text-xs font-bold text-emerald-200 flex items-center justify-center gap-2 cursor-pointer m-0">
                 <FileText className="w-4 h-4 text-emerald-400" /> Optional Passbook Photo or Cancelled Cheque
               </label>
+
               <input
                 type="file"
                 accept="image/*"
@@ -225,60 +237,77 @@ export const BankAccounts = () => {
                 className="hidden"
                 id="passbook-upload"
               />
+
               <label
                 htmlFor="passbook-upload"
-                className="btn-secondary cursor-pointer inline-flex items-center gap-2 py-2 px-4 text-xs font-bold"
+                className="btn-secondary cursor-pointer inline-flex items-center gap-2 py-2 px-4 text-xs font-bold bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-500/40 text-emerald-200 rounded-xl"
               >
                 <UploadCloud className="w-4 h-4 text-emerald-400" /> Choose File
               </label>
 
-              {docPreview && (
-                <div className="mt-3 flex items-center justify-center gap-2">
-                  <img src={docPreview} alt="Doc Preview" className="h-14 w-20 object-cover rounded border border-emerald-400/40" />
+              {docPreview ? (
+                <div className="flex items-center gap-3 pt-1">
+                  <img src={docPreview} alt="Doc Preview" className="h-12 w-16 object-cover rounded-lg border border-emerald-400/50 shadow" />
                   <span className="text-xs text-emerald-300 font-semibold">Document Attached ✅</span>
                 </div>
+              ) : (
+                <span className="text-[11px] text-emerald-300/60">Upload photo for manual bank verification (Optional)</span>
               )}
             </div>
 
-            <Button type="submit" loading={saving} className="btn-primary w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+            {/* Save Button */}
+            <Button
+              type="submit"
+              loading={saving}
+              className="btn-primary w-full py-3 bg-gradient-to-r from-emerald-600 to-lime-600 hover:from-emerald-500 hover:to-lime-500 text-white font-extrabold rounded-xl shadow-lg"
+            >
               Save & Auto-Verify Payout Account
             </Button>
           </form>
         </Card>
 
-        {/* Registered Payout Accounts */}
-        <Card className="glass-card p-6 border-emerald-500/20">
-          <h2 className="text-xl font-bold text-white mb-4">Your Registered Payout Accounts</h2>
+        {/* Right Column: Registered Accounts List */}
+        <Card className="glass-card p-6 border-emerald-500/20 bg-emerald-950/40 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-2 border-b border-emerald-500/20 pb-3 mb-5">
+            <Building2 className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-extrabold text-white">Your Registered Payout Accounts</h2>
+          </div>
+
           <div className="bank-account-list space-y-4">
             {accounts.length === 0 && (
-              <p className="empty-state text-center text-emerald-200/50 py-12">No payout account registered yet.</p>
+              <div className="text-center text-emerald-200/50 py-16 space-y-2">
+                <Smartphone className="w-10 h-10 text-emerald-500/30 mx-auto" />
+                <p className="text-sm">No payout account registered yet.</p>
+                <p className="text-xs text-emerald-300/40">Add your UPI ID or Bank details to start receiving withdrawals.</p>
+              </div>
             )}
+
             {accounts.map((account) => (
               <article
-                className="bank-account-item p-4 rounded-xl border border-emerald-500/20 bg-emerald-950/40 flex justify-between items-center gap-4"
+                className="bank-account-item p-4 rounded-xl border border-emerald-500/30 bg-emerald-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 key={account.id}
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <strong className="text-white text-sm">{account.account_holder_name}</strong>
-                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Verified ✅
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <strong className="text-white text-sm font-bold">{account.account_holder_name}</strong>
+                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Verified ✅
                     </span>
                     {account.is_default && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                        <Star className="w-3 h-3" /> Default
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                        <Star className="w-3 h-3 fill-amber-400" /> Default
                       </span>
                     )}
                   </div>
 
                   {account.upi_id && (
-                    <p className="text-xs text-amber-300 font-mono font-bold flex items-center gap-1">
+                    <p className="text-xs text-amber-300 font-mono font-bold flex items-center gap-1.5">
                       <Smartphone className="w-3.5 h-3.5 text-amber-400" /> UPI ID: {account.upi_id}
                     </p>
                   )}
 
                   {account.account_number && account.account_number !== 'UPI_PAYOUT' && (
-                    <p className="text-xs text-emerald-100">
+                    <p className="text-xs text-emerald-100/90 font-medium">
                       🏦 {account.bank_name} · A/C: {account.account_number} (IFSC: {account.ifsc_code})
                     </p>
                   )}
@@ -289,22 +318,22 @@ export const BankAccounts = () => {
                         href={account.document_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] text-emerald-400 underline flex items-center gap-1"
+                        className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
                       >
-                        <FileText className="w-3 h-3" /> View Submitted Passbook / Cheque
+                        <FileText className="w-3.5 h-3.5" /> View Submitted Passbook / Cheque
                       </a>
                     </div>
                   )}
                 </div>
 
-                <div className="bank-account-actions flex gap-2">
+                <div className="bank-account-actions flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-emerald-500/20">
                   {!account.is_default && (
-                    <Button onClick={() => makeDefault(account.id)} className="btn-secondary text-xs py-1 px-2.5">
+                    <Button onClick={() => makeDefault(account.id)} className="btn-secondary text-xs py-1.5 px-3 bg-emerald-900/60 hover:bg-emerald-800 text-emerald-200 border border-emerald-500/30">
                       Set Default
                     </Button>
                   )}
                   {!account.is_default && (
-                    <Button onClick={() => remove(account.id)} className="btn-danger text-xs py-1 px-2">
+                    <Button onClick={() => remove(account.id)} className="btn-danger text-xs p-2 bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-500/30 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   )}

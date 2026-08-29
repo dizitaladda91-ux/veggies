@@ -86,6 +86,9 @@ class UserRepository {
   async saveEmailVerification(userId, tokenHash, expiresAt) {
     await db.query('UPDATE users SET email_verification_token_hash=$1, email_verification_expires_at=$2 WHERE id=$3', [tokenHash, expiresAt, userId]);
   }
+  async saveEmailVerificationToken(userId, tokenHash, expiresAt) {
+    return this.saveEmailVerification(userId, tokenHash, expiresAt);
+  }
 
   async findByEmailVerificationToken(tokenHash) {
     const res = await db.query(
