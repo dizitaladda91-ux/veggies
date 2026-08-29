@@ -340,15 +340,23 @@ class AuthService {
     if (!user) {
       user = await userRepository.findByOfficialEmail(cleanEmail);
     }
-    if (!user) return { message: 'If that account exists, a reset link has been sent' };
+    if (!user) {
+      throw ApiError.notFound('No registered account found with this email address.');
+    }
 
     const token = crypto.randomBytes(32).toString('hex');
     const hashed = crypto.createHash('sha256').update(token).digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await userRepository.savePasswordResetToken(user.id, hashed, expiresAt);
-    emailService.sendPasswordResetEmail(user, token).catch(err => logger.error('Failed to send reset email', { error: err.message }));
-    return { message: 'If that account exists, a reset link has been sent' };
+    
+    const sendResult = await emailService.sendPasswordResetEmail(user, token);
+    if (!sendResult.success) {
+      logger.error(`[PASSWORD RESET EMAIL FAILURE] Could not deliver reset email to ${cleanEmail}: ${sendResult.error || sendResult.reason}`);
+      throw ApiError.badRequest(`Failed to deliver password reset email: ${sendResult.error || sendResult.reason || 'SMTP delivery error.'}`);
+    }
+
+    return { message: 'Password reset link sent successfully! Please check your email inbox or spam folder.' };
   }
 
   async resetPassword(token, newPassword) {
